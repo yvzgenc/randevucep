@@ -9,20 +9,22 @@ import { Input } from '@/components/ui/Input'
 import styles from '../auth.module.css'
 
 export function RegisterForm() {
-  const router = useRouter()
+  const router   = useRouter()
   const [fullName, setFullName] = useState('')
-  const [email, setEmail] = useState('')
+  const [email, setEmail]       = useState('')
   const [password, setPassword] = useState('')
-  const [error, setError] = useState<string | null>(null)
-  const [loading, setLoading] = useState(false)
+  const [error, setError]       = useState<string | null>(null)
+  const [info, setInfo]         = useState<string | null>(null)
+  const [loading, setLoading]   = useState(false)
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
     setError(null)
+    setInfo(null)
     setLoading(true)
 
     const supabase = createClient()
-    const { error: authError } = await supabase.auth.signUp({
+    const { data, error: authError } = await supabase.auth.signUp({
       email,
       password,
       options: {
@@ -36,8 +38,30 @@ export function RegisterForm() {
       return
     }
 
-    router.push('/onboarding')
-    router.refresh()
+    // If session is present, email confirmation is disabled — go straight to onboarding
+    if (data.session) {
+      router.push('/onboarding')
+      router.refresh()
+      return
+    }
+
+    // Session is null → email confirmation required
+    // Show info message, don't navigate
+    setInfo(
+      'Hesabınız oluşturuldu! E-posta adresinize bir doğrulama bağlantısı gönderdik. ' +
+      'Bağlantıya tıkladıktan sonra giriş yapabilirsiniz.'
+    )
+    setLoading(false)
+  }
+
+  // Show confirmation message state
+  if (info) {
+    return (
+      <div className={styles.infoBox}>
+        <p>{info}</p>
+        <a href="/login" className={styles.infoLink}>Giriş sayfasına git →</a>
+      </div>
+    )
   }
 
   return (

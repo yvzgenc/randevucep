@@ -3,7 +3,9 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 export default async function RootPage() {
   const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+  const {
+    data: { user },
+  } = await supabase.auth.getUser()
 
   if (!user) {
     redirect('/login')
@@ -15,7 +17,8 @@ export default async function RootPage() {
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!business?.onboarding_completed) {
+  // No business or onboarding not done → onboarding
+  if (!business || !business.onboarding_completed) {
     redirect('/onboarding')
   }
 

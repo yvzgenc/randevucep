@@ -67,3 +67,25 @@
 .footer a:hover {
   text-decoration: underline;
 }
+
+.infoBox {
+  padding: 20px;
+  background: rgba(34, 199, 122, 0.08);
+  border: 1px solid rgba(34, 199, 122, 0.25);
+  border-radius: var(--radius-md);
+  font-size: 14px;
+  line-height: 1.6;
+  color: var(--color-text);
+  margin-top: 4px;
+}
+
+.infoLink {
+  display: inline-block;
+  margin-top: 12px;
+  color: var(--color-accent);
+  font-weight: 500;
+}
+
+.infoLink:hover {
+  text-decoration: underline;
+}

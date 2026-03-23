@@ -1,7 +1,7 @@
 import type { Metadata } from 'next'
-import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { redirect } from 'next/navigation'
-import styles from '../placeholder.module.css'
+import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { ServicesManager } from '@/components/dashboard/ServicesManager'
 
 export const metadata: Metadata = { title: 'Hizmetler' }
 
@@ -10,10 +10,24 @@ export default async function ServicesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
+  const { data: business } = await supabase
+    .from('businesses')
+    .select('*')
+    .eq('owner_id', user.id)
+    .maybeSingle()
+
+  if (!business) redirect('/onboarding')
+
+  const { data: services } = await supabase
+    .from('services')
+    .select('*')
+    .eq('business_id', business.id)
+    .order('service_name')
+
   return (
-    <div>
-      <h1 className={styles.title}>Hizmetler</h1>
-      <p className={styles.desc}>Hizmet yönetimi bir sonraki fazda eklenecek.</p>
-    </div>
+    <ServicesManager
+      businessId={business.id}
+      initial={services ?? []}
+    />
   )
 }

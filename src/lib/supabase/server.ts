@@ -3,10 +3,15 @@ import { cookies } from 'next/headers'
 import type { SupabaseClient } from '@supabase/supabase-js'
 import type { Database } from '@/types/database'
 
-// Explicit return type forces TypeScript to use SupabaseClient<Database>
-// from @supabase/supabase-js instead of inferring from @supabase/ssr's
-// complex conditional generic — which can resolve to never when cookie
-// option types don't exactly match the installed Next.js version.
+// Local type for the setAll cookie parameter.
+// Mirrors @supabase/ssr's internal shape without importing it directly,
+// avoiding CookieOptions/ResponseCookie version drift across @supabase/ssr releases.
+type CookieItem = {
+  name: string
+  value: string
+  options?: Record<string, unknown>
+}
+
 export async function createServerSupabaseClient(): Promise<SupabaseClient<Database>> {
   const cookieStore = await cookies()
 
@@ -18,13 +23,13 @@ export async function createServerSupabaseClient(): Promise<SupabaseClient<Datab
         getAll() {
           return cookieStore.getAll()
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: CookieItem[]) {
           try {
             cookiesToSet.forEach(({ name, value, options }) =>
               cookieStore.set(name, value, options)
             )
           } catch {
-            // Server Component context — cookie writes are not available, safe to ignore
+            // Server Component context — cookie writes not available, safe to ignore
           }
         },
       },

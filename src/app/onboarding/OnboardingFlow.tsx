@@ -10,19 +10,28 @@ import styles from './onboarding.module.css'
 
 interface Props {
   userId: string
+  userEmail: string
+  fullName: string
   existingBusinessId: number | null
 }
 
-export function OnboardingFlow({ userId, existingBusinessId }: Props) {
+export function OnboardingFlow({
+  userId,
+  userEmail,
+  fullName,
+  existingBusinessId,
+}: Props) {
   const router = useRouter()
-  const [name, setName] = useState('')
-  const [slug, setSlug] = useState('')
+
+  const [name, setName]   = useState('')
+  const [slug, setSlug]   = useState('')
   const [phone, setPhone] = useState('')
-  const [city, setCity] = useState('')
-  const [error, setError] = useState<string | null>(null)
+  const [city, setCity]   = useState('')
+
+  const [error, setError]     = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
 
-  function deriveSlug(value: string) {
+  function deriveSlug(value: string): string {
     return value
       .toLowerCase()
       .replace(/ğ/g, 'g').replace(/ü/g, 'u').replace(/ş/g, 's')
@@ -38,19 +47,30 @@ export function OnboardingFlow({ userId, existingBusinessId }: Props) {
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
-    if (!name.trim() || !slug.trim()) {
-      setError('İşletme adı ve URL zorunludur.')
+
+    const trimmedName = name.trim()
+    const trimmedSlug = slug.trim()
+
+    if (!trimmedName || !trimmedSlug) {
+      setError('İşletme adı ve rezervasyon URL\'si zorunludur.')
       return
     }
+
+    if (trimmedSlug.length < 3) {
+      setError('Rezervasyon URL\'si en az 3 karakter olmalıdır.')
+      return
+    }
+
     setError(null)
     setLoading(true)
 
     const supabase = createClient()
 
-    const payload = {
+    // 1. Upsert the business record
+    const businessPayload = {
       owner_id: userId,
-      name: name.trim(),
-      slug: slug.trim(),
+      name: trimmedName,
+      slug: trimmedSlug,
       phone: phone.trim() || null,
       city: city.trim() || null,
       onboarding_completed: true,
@@ -58,29 +78,61 @@ export function OnboardingFlow({ userId, existingBusinessId }: Props) {
       plan: 'starter',
     }
 
-    let dbError: { message: string } | null = null
+    let businessId: number | null = existingBusinessId
 
     if (existingBusinessId) {
-      const { error } = await supabase
+      const { error: updateError } = await supabase
         .from('businesses')
-        .update({ ...payload })
+        .update(businessPayload)
         .eq('id', existingBusinessId)
-      dbError = error
+
+      if (updateError) {
+        setError(
+          updateError.message.includes('unique')
+            ? 'Bu rezervasyon URL\'si kullanılıyor. Başka bir tane deneyin.'
+            : updateError.message
+        )
+        setLoading(false)
+        return
+      }
     } else {
-      const { error } = await supabase
+      const { data: inserted, error: insertError } = await supabase
         .from('businesses')
-        .insert(payload)
-      dbError = error
+        .insert(businessPayload)
+        .select('id')
+        .single()
+
+      if (insertError) {
+        setError(
+          insertError.message.includes('unique')
+            ? 'Bu rezervasyon URL\'si kullanılıyor. Başka bir tane deneyin.'
+            : insertError.message
+        )
+        setLoading(false)
+        return
+      }
+
+      businessId = inserted.id
     }
 
-    if (dbError) {
-      setError(
-        dbError.message.includes('unique')
-          ? 'Bu URL zaten kullanılıyor. Başka bir tane deneyin.'
-          : dbError.message
+    // 2. Upsert the user profile in public.users
+    const { error: userError } = await supabase
+      .from('users')
+      .upsert(
+        {
+          id: userId,
+          email: userEmail,
+          full_name: fullName || null,
+          business_id: businessId,
+          role: 'owner',
+          is_active: true,
+        },
+        { onConflict: 'id' }
       )
-      setLoading(false)
-      return
+
+    if (userError) {
+      // Non-fatal: profile upsert failed, still proceed to dashboard
+      console.error('User profile upsert failed:', userError.message)
     }
 
     router.push('/dashboard')
@@ -92,7 +144,9 @@ export function OnboardingFlow({ userId, existingBusinessId }: Props) {
       <div className={styles.card}>
         <div className={styles.logo}>✂ SalonCep</div>
         <h1 className={styles.heading}>İşletmenizi Kurun</h1>
-        <p className={styles.sub}>Birkaç bilgi ile başlayalım. Her şeyi sonradan değiştirebilirsiniz.</p>
+        <p className={styles.sub}>
+          Birkaç bilgi ile başlayalım. Her şeyi sonradan değiştirebilirsiniz.
+        </p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
           <Input
@@ -134,7 +188,7 @@ export function OnboardingFlow({ userId, existingBusinessId }: Props) {
           {error ? <p className={styles.errorMsg}>{error}</p> : null}
 
           <Button type="submit" fullWidth loading={loading}>
-            Devam Et →
+            İşletmemi Kur ve Devam Et →
           </Button>
         </form>
       </div>
