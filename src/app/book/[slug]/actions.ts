@@ -1,10 +1,8 @@
 'use server'
 
 // ─── Server-side booking action ───────────────────────────────────────────────
-// Replaces the client-side supabase.rpc('book_appointment') call in BookingFlow.
-// Running server-side guarantees the notification fires even if the browser tab
-// closes or the network drops after booking — the response is already on the
-// server by the time we call notifyBookingCreated().
+// Runs entirely server-side — guarantees notification fires even if the browser
+// tab closes after submission.
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { notifyBookingCreated }        from '@/lib/notifications'
@@ -18,8 +16,8 @@ export interface BookAppointmentArgs {
   staffName:        string
   customerName:     string
   customerPhone:    string
-  date:             string   // YYYY-MM-DD
-  time:             string   // HH:MM
+  date:             string
+  time:             string
   price:            number
   notes:            string | null
   customerEmail:    string | null
@@ -34,42 +32,49 @@ export interface BookAppointmentResult {
 export async function bookAppointment(
   args: BookAppointmentArgs,
 ): Promise<BookAppointmentResult> {
-  // Use anon Supabase client — book_appointment is SECURITY DEFINER + GRANT TO anon
   const supabase = await createServerSupabaseClient()
 
   const { data, error } = await supabase.rpc('book_appointment', {
-    p_business_id:     args.businessId,
-    p_service_id:      args.serviceId,
-    p_service_name:    args.serviceName,
+    p_business_id:      args.businessId,
+    p_service_id:       args.serviceId,
+    p_service_name:     args.serviceName,
     p_service_duration: args.serviceDuration,
-    p_staff_id:        args.staffId,
-    p_staff_name:      args.staffName,
-    p_customer_name:   args.customerName,
-    p_customer_phone:  args.customerPhone,
-    p_date:            args.date,
-    p_time:            args.time,
-    p_price:           args.price,
-    p_notes:           args.notes,
-    p_customer_email:  args.customerEmail || null,
+    p_staff_id:         args.staffId,
+    p_staff_name:       args.staffName,
+    p_customer_name:    args.customerName,
+    p_customer_phone:   args.customerPhone,
+    p_date:             args.date,
+    p_time:             args.time,
+    p_price:            args.price,
+    p_notes:            args.notes,
+    p_customer_email:   args.customerEmail ?? null,
   })
 
   if (error) {
     return { error: 'Randevu oluşturulamadı: ' + error.message }
   }
 
-  const result = data as { error?: string; appointment_id?: number; customer_id?: number }
+  // data is typed as the book_appointment Returns shape via database.ts
+  // Cast through unknown once — the RPC returns jsonb which the SDK types as Json
+  const rpcResult = data as unknown as {
+    error?:          string
+    appointment_id?: number
+    customer_id?:    number
+  } | null
 
-  if (result?.error) {
-    return { error: result.error }
+  if (!rpcResult) {
+    return { error: 'Randevu kaydı alınamadı.' }
   }
 
-  const appointmentId = result.appointment_id
-  const customerId    = result.customer_id
+  if (rpcResult.error) {
+    return { error: rpcResult.error }
+  }
 
-  // ── Server-side notification chain ───────────────────────────────────────
-  // Guaranteed to execute — browser state is irrelevant at this point.
-  if (appointmentId && args.customerEmail?.includes('@')) {
-    // Fetch business info for notification (needed for email/name/phone/slug)
+  const appointmentId = rpcResult.appointment_id ?? undefined
+  const customerId    = rpcResult.customer_id    ?? undefined
+
+  // ── Server-side notification (fire-and-forget) ────────────────────────────
+  if (appointmentId !== undefined && args.customerEmail?.includes('@')) {
     const { data: biz } = await supabase
       .from('businesses')
       .select('name, slug, phone, email')
@@ -81,8 +86,6 @@ export async function bookAppointment(
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       })
 
-      // void — notification failures are logged inside notifyBookingCreated,
-      // never surfaced to the user
       void notifyBookingCreated({
         customerEmail: args.customerEmail,
         customerName:  args.customerName,

@@ -1,26 +1,29 @@
 'use server'
 
-import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { headers }                     from 'next/headers'
+import { createServerSupabaseClient }   from '@/lib/supabase/server'
 import { getPaymentProvider, buildIdempotencyKey } from '@/lib/payments'
-import { PLANS, toPlanName, type PlanName } from '@/lib/plans'
+import { PLANS, toPlanName }            from '@/lib/plans'
 
 export interface StartCheckoutResult {
-  error?:              string
-  /** iyzico: inject this HTML into the page to trigger the form POST */
+  error?:               string
+  /** iyzico: inject this HTML into the page to trigger the 3DS form POST */
   checkoutFormContent?: string
-  /** Stripe/Paddle: redirect here */
-  checkoutUrl?:        string
+  /** Stripe/Paddle: redirect to this URL */
+  checkoutUrl?:         string
 }
 
 /**
- * Server Action: validates the upgrade request and initiates a checkout session.
+ * Server Action: validates the upgrade request and starts a checkout session.
  *
  * Security:
- * - Runs entirely server-side; client never touches payment credentials.
- * - Validates authenticated user owns the business being upgraded.
- * - Creates a `pending` payment record before calling the provider,
- *   so we have an audit trail even if the provider call fails.
- * - Subscription is NOT updated here — only after verified callback.
+ * - Runs server-side only — client never touches payment credentials.
+ * - Validates the authenticated user owns the business being upgraded.
+ * - Inserts a `pending` payments row before calling the provider — audit trail
+ *   survives even if the provider call throws.
+ * - On duplicate idempotency key (same user retrying), reuses the existing
+ *   pending row and re-calls the provider for a fresh form.
+ * - Subscription is NEVER updated here — only via verified webhook callback.
  */
 export async function startCheckout(
   planName: string,
@@ -31,7 +34,6 @@ export async function startCheckout(
 
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
-  // Validate plan
   const safePlan = toPlanName(planName)
   if (safePlan === 'starter') {
     return { error: 'Starter plan ücretsizdir, ödeme gerekmez.' }
@@ -50,7 +52,7 @@ export async function startCheckout(
     return { error: 'İşletme bulunamadı.' }
   }
 
-  // Don't let someone buy a plan they already have (not on trial)
+  // Guard: don't charge for an already active (non-trial) plan
   const { data: sub } = await supabase
     .from('subscriptions')
     .select('plan_name, status, trial_ends_at')
@@ -66,16 +68,31 @@ export async function startCheckout(
     }
   }
 
-  const amount = period === 'yearly'
-    ? Math.round(planConfig.price_try * 10 * 100) / 100  // 10 months for yearly
+  const amount         = period === 'yearly'
+    ? Math.round(planConfig.price_try * 10 * 100) / 100
     : planConfig.price_try
 
   const idempotencyKey = buildIdempotencyKey(business.id, safePlan, period)
-  const appUrl = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
-  const callbackUrl = `${appUrl}/api/webhooks/payment`
+  const appUrl         = process.env.NEXT_PUBLIC_APP_URL ?? 'http://localhost:3000'
+  const callbackUrl    = `${appUrl}/api/webhooks/payment`
 
-  // ── Record pending payment (audit trail, idempotency anchor) ─────────────
-  const { data: payment, error: payErr } = await supabase
+  // Extract buyer IP for iyzico (required field)
+  let buyerIp: string | undefined
+  try {
+    const hdrs = await headers()
+    buyerIp = hdrs.get('x-forwarded-for')?.split(',')[0]?.trim()
+           ?? hdrs.get('x-real-ip')
+           ?? undefined
+  } catch {
+    // headers() unavailable in some test contexts — safe to skip
+  }
+
+  // ── Upsert the pending payment row ────────────────────────────────────────
+  // On duplicate conversationId (user retrying same plan/period in same month),
+  // we reuse the existing row and get a fresh checkout form from the provider.
+  let paymentId: number | undefined
+
+  const { data: inserted, error: insertErr } = await supabase
     .from('payments')
     .insert({
       business_id:              business.id,
@@ -89,23 +106,41 @@ export async function startCheckout(
     .select('id')
     .single()
 
-  if (payErr) {
-    // May be a duplicate (same idempotency key) — that's fine, just fetch it
-    if (!payErr.message.includes('unique')) {
-      return { error: `Ödeme kaydı oluşturulamadı: ${payErr.message}` }
+  if (insertErr) {
+    if (insertErr.code === '23505' || insertErr.message.includes('unique')) {
+      // Duplicate — fetch the existing row
+      const { data: existing } = await supabase
+        .from('payments')
+        .select('id, status')
+        .eq('provider_conversation_id', idempotencyKey)
+        .maybeSingle()
+
+      if (!existing) {
+        return { error: 'Ödeme kaydı oluşturulamadı.' }
+      }
+      // Don't restart a completed payment
+      if (existing.status === 'success') {
+        return { error: 'Bu plan için ödeme zaten alınmış.' }
+      }
+      paymentId = existing.id
+    } else {
+      return { error: `Ödeme kaydı oluşturulamadı: ${insertErr.message}` }
     }
+  } else {
+    paymentId = inserted?.id
   }
 
-  // ── Call provider ─────────────────────────────────────────────────────────
+  // ── Call iyzico ───────────────────────────────────────────────────────────
   try {
     const provider = getPaymentProvider()
-    const session = await provider.createCheckoutSession({
+    const session  = await provider.createCheckoutSession({
       businessId:     business.id,
       planName:       safePlan,
       amountTry:      amount,
       idempotencyKey,
       buyerEmail:     user.email ?? '',
       buyerName:      business.name,
+      buyerIp,
       callbackUrl,
     })
 
@@ -115,13 +150,16 @@ export async function startCheckout(
     }
   } catch (err) {
     const message = err instanceof Error ? err.message : 'Ödeme başlatılamadı.'
-    // Mark the pending record as failed
-    if (payment) {
+    console.error('[checkout] Provider error:', message)
+
+    // Mark the payment row as failed so the UI can show a clear error
+    if (paymentId !== undefined) {
       await supabase
         .from('payments')
         .update({ status: 'failed' })
-        .eq('id', payment.id)
+        .eq('id', paymentId)
     }
+
     return { error: message }
   }
 }

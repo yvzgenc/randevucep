@@ -39,8 +39,9 @@ export async function updateSubscription(
 
   if (error) return { error: error.message }
 
-  // data is the jsonb return — check for error field
-  const result = data as { ok?: boolean; error?: string } | null
+  // admin_update_subscription returns Json (jsonb) — bridge through unknown
+  // to safely narrow to the known shape without a direct unsound cast.
+  const result = (data as unknown as { ok?: boolean; error?: string } | null)
   if (result?.error) return { error: result.error }
 
   revalidatePath('/admin/businesses')

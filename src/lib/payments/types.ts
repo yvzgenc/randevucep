@@ -43,6 +43,7 @@ export interface CheckoutRequest {
   idempotencyKey:  string
   buyerEmail:      string
   buyerName:       string
+  buyerIp?:        string
   callbackUrl:     string
 }
 

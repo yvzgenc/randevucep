@@ -13,6 +13,18 @@ export interface UpdateStatusResult {
   customerEmail?: string
 }
 
+type AppointmentForStatusUpdate = {
+  id: number
+  business_id: number | null
+  customer_name: string
+  customer_phone: string | null
+  customer_email: string | null
+  service_name: string | null
+  staff_name: string | null
+  appointment_date: string
+  appointment_time: string
+}
+
 export async function updateAppointmentStatus(
   appointmentId: number,
   newStatus: AppointmentStatus,
@@ -36,14 +48,14 @@ export async function updateAppointmentStatus(
     .select(
       `
         id,
+        business_id,
         customer_name,
         customer_phone,
         customer_email,
         service_name,
         staff_name,
         appointment_date,
-        appointment_time,
-        business_id
+        appointment_time
       `
     )
     .eq('id', appointmentId)
@@ -53,11 +65,11 @@ export async function updateAppointmentStatus(
     return { error: 'Randevu bulunamadı.' }
   }
 
-  const appt = appointmentQuery.data
+  const appt = appointmentQuery.data as unknown as AppointmentForStatusUpdate
 
-if (appt.business_id == null) {
-  return { error: 'Randevuya bağlı işletme bulunamadı.' }
-}
+  if (appt.business_id == null) {
+    return { error: 'Randevuya bağlı işletme bulunamadı.' }
+  }
 
   const businessQuery = await supabase
     .from('businesses')
@@ -97,12 +109,12 @@ if (appt.business_id == null) {
 
     const notifData = {
       businessName: biz.name,
-      businessPhone: biz.phone ?? undefined,
+      businessPhone: biz.phone ?? '',
       businessSlug: biz.slug,
       customerName: appt.customer_name,
-      customerPhone: appt.customer_phone,
-      serviceName: appt.service_name,
-      staffName: appt.staff_name,
+      customerPhone: appt.customer_phone ?? '',
+      serviceName: appt.service_name ?? '',
+      staffName: appt.staff_name ?? '',
       appointmentDate,
       appointmentTime: appt.appointment_time,
       appointmentId: appt.id,

@@ -1,24 +1,28 @@
 // ─── iyzico Payment Provider ──────────────────────────────────────────────────
-// Implements the PaymentProvider interface for iyzico.
+// Full implementation of the PaymentProvider interface for iyzico.
 //
 // iyzico API docs: https://dev.iyzipay.com/
+// SDK reference:   https://github.com/iyzico/iyzipay-node
 //
-// Environment variables required:
-//   IYZICO_API_KEY     — API key from iyzico merchant panel
-//   IYZICO_SECRET_KEY  — Secret key from iyzico merchant panel
-//   IYZICO_BASE_URL    — https://sandbox.iyzipay.com  (test)
-//                         https://api.iyzipay.com       (production)
+// Environment variables:
+//   IYZICO_API_KEY    — from iyzico merchant panel
+//   IYZICO_SECRET_KEY — from iyzico merchant panel
+//   IYZICO_BASE_URL   — https://sandbox.iyzipay.com (test)
+//                        https://api.iyzipay.com      (production)
 //
-// iyzico checkout flow:
-//   1. POST /payment/iyzipos/checkoutform/initialize (returns HTML form)
-//   2. User submits form → iyzico redirects to callbackUrl with token
-//   3. POST /payment/iyzipos/checkoutform/auth/ecommerce/detail
-//      to verify the token server-side
+// Checkout flow:
+//   1. POST /payment/iyzipos/checkoutform/initialize
+//      → returns checkoutFormContent (HTML form to inject)
+//   2. Browser submits form → iyzico 3DS flow
+//   3. iyzico POSTs to callbackUrl with { token, status, conversationId }
+//   4. Server calls POST /payment/iyzipos/checkoutform/auth/ecommerce/detail
+//      with token + conversationId to verify server-side
 //
-// This file provides the skeleton structure. Wire up the actual HTTP calls
-// once iyzico merchant credentials are available.
+// Authorization header format (IYZWS):
+//   IYZWS {apiKey}:{base64(HMAC-SHA256(randomKey + PKIstring, secretKey))}
+//   where PKIstring = [key1]=[val1]&[key2]=[val2]...
 
-import { createHash, createHmac } from 'crypto'
+import { createHmac, randomBytes } from 'crypto'
 import type {
   PaymentProvider,
   CheckoutSession,
@@ -27,35 +31,69 @@ import type {
   ProviderName,
 } from '../types'
 
-// ─── HMAC / SHA1 helpers (iyzico PKI string) ──────────────────────────────────
+// ─── Auth header helpers ──────────────────────────────────────────────────────
 
-function generateRandomString(length = 8): string {
-  return Math.random().toString(36).substring(2, 2 + length)
+function generateRandom(): string {
+  return randomBytes(12).toString('hex')
 }
 
 /**
- * iyzico PKI string format for request signing:
- * apiKey + randomKey + currentTime + secretKey + conversationId + price + ...
- * See iyzico docs for exact field order per endpoint.
+ * Builds the PKI string from an ordered object.
+ * Format: [key]=[value]&[key]=[value]...
+ * Only non-null string values are included.
  */
-function generatePkiString(params: Record<string, string>): string {
+function buildPkiString(params: Record<string, string | number>): string {
   return Object.entries(params)
-    .map(([, v]) => v)
-    .join('')
+    .map(([k, v]) => `[${k}]=[${v}]`)
+    .join('&')
 }
 
-function generateAuthorizationHeader(
+/**
+ * Builds the iyzico IYZWS Authorization header.
+ * Algorithm: "IYZWS " + apiKey + ":" + base64(HMAC-SHA256(randomKey + pkiString, secretKey))
+ */
+function buildAuthHeader(
   apiKey:    string,
   secretKey: string,
+  randomKey: string,
   pkiString: string,
 ): string {
-  const randomKey  = generateRandomString()
-  const combined   = apiKey + randomKey + pkiString + secretKey
-  const hash       = createHash('sha1').update(combined).digest('base64')
-  return `IYZWSv2 apiKey:${apiKey}&randomKey:${randomKey}&signature:${hash}`
+  const data      = randomKey + pkiString
+  const signature = createHmac('sha256', secretKey).update(data, 'utf8').digest('base64')
+  return `IYZWS ${apiKey}:${signature}`
 }
 
-// ─── Provider class ───────────────────────────────────────────────────────────
+// ─── iyzico response types ────────────────────────────────────────────────────
+
+interface IyzicoInitResponse {
+  status:              string
+  errorCode?:          string
+  errorMessage?:       string
+  locale?:             string
+  conversationId?:     string
+  checkoutFormContent?: string
+  token?:              string
+  tokenExpireTime?:    number
+}
+
+interface IyzicoDetailResponse {
+  status:           string
+  errorCode?:       string
+  errorMessage?:    string
+  locale?:          string
+  conversationId?:  string
+  token?:           string
+  paymentId?:       string
+  paidPrice?:       string
+  price?:           string
+  currency?:        string
+  installment?:     number
+  basketId?:        string
+  fraudStatus?:     number
+  paymentStatus?:   string
+}
+
+// ─── Provider implementation ──────────────────────────────────────────────────
 
 export class IyzicoProvider implements PaymentProvider {
   readonly name: ProviderName = 'iyzico'
@@ -67,68 +105,91 @@ export class IyzicoProvider implements PaymentProvider {
   constructor() {
     this.apiKey    = process.env.IYZICO_API_KEY    ?? ''
     this.secretKey = process.env.IYZICO_SECRET_KEY ?? ''
-    this.baseUrl   = process.env.IYZICO_BASE_URL   ?? 'https://sandbox.iyzipay.com'
+    this.baseUrl   = (process.env.IYZICO_BASE_URL ?? 'https://sandbox.iyzipay.com').replace(/\/$/, '')
 
     if (!this.apiKey || !this.secretKey) {
-      // Warn at startup but don't throw — allows the app to boot without creds
       console.warn('[iyzico] IYZICO_API_KEY or IYZICO_SECRET_KEY is not set.')
     }
   }
 
-  /** Build the Authorization header for an iyzico request. */
-  private buildAuthHeader(pkiString: string): string {
-    return generateAuthorizationHeader(this.apiKey, this.secretKey, pkiString)
-  }
-
-  /**
-   * Initiate an iyzico checkout form.
-   *
-   * Returns the raw HTML form content that must be injected into the page
-   * so the browser POSTs to iyzico's 3DS flow.
-   *
-   * NOTE: This is a skeleton. Uncomment and adjust the fetch call once
-   * you have real credentials and have tested the request shape.
-   */
-  async createCheckoutSession(req: CheckoutRequest): Promise<CheckoutSession> {
+  private assertConfigured(): void {
     if (!this.apiKey || !this.secretKey) {
       throw new Error(
         'iyzico credentials are not configured. ' +
         'Set IYZICO_API_KEY, IYZICO_SECRET_KEY, and IYZICO_BASE_URL.'
       )
     }
+  }
+
+  /**
+   * Builds headers for a given endpoint request.
+   * randomKey is generated fresh per request for replay protection.
+   */
+  private buildHeaders(randomKey: string, pkiString: string): Record<string, string> {
+    return {
+      'Content-Type':         'application/json',
+      'Accept':               'application/json',
+      'Authorization':        buildAuthHeader(this.apiKey, this.secretKey, randomKey, pkiString),
+      'x-iyzi-rnd':           randomKey,
+      'x-iyzi-client-version': 'iyzipay-node-2.0.50',
+    }
+  }
+
+  // ── createCheckoutSession ───────────────────────────────────────────────────
+
+  async createCheckoutSession(req: CheckoutRequest): Promise<CheckoutSession> {
+    this.assertConfigured()
+
+    const randomKey = generateRandom()
+    const priceStr  = req.amountTry.toFixed(2)
+
+    // PKI string fields for initialize — order matches iyzico node SDK
+    const pkiString = buildPkiString({
+      locale:         'tr',
+      conversationId: req.idempotencyKey,
+      price:          priceStr,
+      paidPrice:      priceStr,
+      currency:       'TRY',
+      basketId:       `plan-${req.planName}-biz-${req.businessId}`,
+      paymentGroup:   'SUBSCRIPTION',
+      callbackUrl:    req.callbackUrl,
+    })
+
+    const [firstName, ...rest] = req.buyerName.trim().split(' ')
+    const lastName = rest.join(' ') || 'Kullanici'
 
     const body = {
-      locale:           'tr',
-      conversationId:   req.idempotencyKey,
-      price:            req.amountTry.toFixed(2),
-      paidPrice:        req.amountTry.toFixed(2),
-      currency:         'TRY',
-      basketId:         `plan-${req.planName}-biz-${req.businessId}`,
-      paymentGroup:     'SUBSCRIPTION',
-      callbackUrl:      req.callbackUrl,
-      enabledInstallments: [1],
+      locale:              'tr',
+      conversationId:      req.idempotencyKey,
+      price:               priceStr,
+      paidPrice:           priceStr,
+      currency:            'TRY',
+      basketId:            `plan-${req.planName}-biz-${req.businessId}`,
+      paymentGroup:        'SUBSCRIPTION',
+      callbackUrl:         req.callbackUrl,
+      enabledInstallments: [1, 2, 3, 6, 9, 12],
       buyer: {
-        id:             String(req.businessId),
-        name:           req.buyerName.split(' ')[0] ?? 'Ad',
-        surname:        req.buyerName.split(' ').slice(1).join(' ') || 'Soyad',
-        email:          req.buyerEmail,
-        identityNumber: '00000000000',   // replace with real TCKN if collected
+        id:                  String(req.businessId),
+        name:                firstName ?? 'Ad',
+        surname:             lastName,
+        email:               req.buyerEmail,
+        identityNumber:      '00000000000',
         registrationAddress: 'Türkiye',
-        city:           'Istanbul',
-        country:        'Turkey',
-        ip:             '85.34.78.112',  // should be real user IP in production
+        city:                'Istanbul',
+        country:             'Turkey',
+        ip:                  req.buyerIp ?? '85.34.78.112',
       },
       shippingAddress: {
-        contactName:    req.buyerName,
-        city:           'Istanbul',
-        country:        'Turkey',
-        address:        'Türkiye',
+        contactName: req.buyerName,
+        city:        'Istanbul',
+        country:     'Turkey',
+        address:     'Türkiye',
       },
       billingAddress: {
-        contactName:    req.buyerName,
-        city:           'Istanbul',
-        country:        'Turkey',
-        address:        'Türkiye',
+        contactName: req.buyerName,
+        city:        'Istanbul',
+        country:     'Turkey',
+        address:     'Türkiye',
       },
       basketItems: [
         {
@@ -136,113 +197,151 @@ export class IyzicoProvider implements PaymentProvider {
           name:      `RandevuCep ${req.planName} Plan`,
           category1: 'SaaS Abonelik',
           itemType:  'VIRTUAL',
-          price:     req.amountTry.toFixed(2),
+          price:     priceStr,
         },
       ],
     }
 
-    // ── Actual iyzico API call (uncomment when credentials are ready) ──────
-    //
-    // const pkiString = generatePkiString({
-    //   apiKey: this.apiKey,
-    //   conversationId: req.idempotencyKey,
-    //   price: body.price,
-    //   paidPrice: body.paidPrice,
-    // })
-    // const response = await fetch(
-    //   `${this.baseUrl}/payment/iyzipos/checkoutform/initialize`,
-    //   {
-    //     method:  'POST',
-    //     headers: {
-    //       'Content-Type':  'application/json',
-    //       'Authorization': this.buildAuthHeader(pkiString),
-    //       'x-iyzi-rnd':    generateRandomString(),
-    //       'x-iyzi-client-version': 'iyzipay-node-2.0.50',
-    //     },
-    //     body: JSON.stringify(body),
-    //   }
-    // )
-    // const data = await response.json()
-    // if (data.status !== 'success') {
-    //   throw new Error(`iyzico error: ${data.errorMessage ?? 'Unknown'}`)
-    // }
-    // return {
-    //   provider:            'iyzico',
-    //   conversationId:      req.idempotencyKey,
-    //   checkoutFormContent: data.checkoutFormContent,
-    // }
-
-    // ── Placeholder response (remove when going live) ────────────────────
-    throw new Error(
-      'iyzico checkout is not yet live. ' +
-      'Configure IYZICO_API_KEY / IYZICO_SECRET_KEY and uncomment the API call.'
+    const response = await fetch(
+      `${this.baseUrl}/payment/iyzipos/checkoutform/initialize`,
+      {
+        method:  'POST',
+        headers: this.buildHeaders(randomKey, pkiString),
+        body:    JSON.stringify(body),
+      }
     )
-    // eslint-disable-next-line no-unreachable
-    return { provider: 'iyzico', conversationId: req.idempotencyKey }
-  }
 
-  /**
-   * Verify an incoming iyzico checkout callback.
-   *
-   * iyzico POSTs a `token` to the callbackUrl. We must call
-   * /payment/iyzipos/checkoutform/auth/ecommerce/detail with that token
-   * to get the final payment result and verify it server-side.
-   */
-  async verifyCallback(
-    payload:  Record<string, unknown>,
-    _headers: Record<string, string>,
-  ): Promise<PaymentResult> {
-    if (!this.apiKey || !this.secretKey) {
-      throw new Error('iyzico credentials are not configured.')
+    let data: IyzicoInitResponse
+    try {
+      data = (await response.json()) as IyzicoInitResponse
+    } catch {
+      throw new Error(`iyzico returned non-JSON response (HTTP ${response.status})`)
     }
 
-    const token = payload['token']
-    if (typeof token !== 'string' || !token) {
+    if (data.status !== 'success' || !data.checkoutFormContent) {
+      const errMsg = data.errorMessage ?? data.errorCode ?? `HTTP ${response.status}`
+      console.error('[iyzico] Checkout initialize failed:', errMsg, '| conversationId:', req.idempotencyKey)
+      throw new Error(`iyzico ödeme başlatılamadı: ${errMsg}`)
+    }
+
+    console.info('[iyzico] Checkout initialized | conversationId:', req.idempotencyKey)
+
+    return {
+      provider:            'iyzico',
+      conversationId:      req.idempotencyKey,
+      checkoutFormContent: data.checkoutFormContent,
+    }
+  }
+
+  // ── verifyCallback ──────────────────────────────────────────────────────────
+
+  async verifyCallback(
+    payload: Record<string, unknown>,
+    _headers: Record<string, string>,
+  ): Promise<PaymentResult> {
+    this.assertConfigured()
+
+    // iyzico POSTs form-urlencoded with: token, status, conversationId
+    const token = typeof payload['token'] === 'string' ? payload['token'] : null
+    if (!token) {
       throw new Error('iyzico callback: missing token in payload.')
     }
 
-    const conversationId = payload['conversationId']
-    if (typeof conversationId !== 'string') {
+    const conversationId = typeof payload['conversationId'] === 'string'
+      ? payload['conversationId']
+      : null
+    if (!conversationId) {
       throw new Error('iyzico callback: missing conversationId in payload.')
     }
 
-    // ── Actual verification call (uncomment when credentials are ready) ───
-    //
-    // const body = { locale: 'tr', conversationId, token }
-    // const pkiString = generatePkiString({ apiKey: this.apiKey, conversationId, token })
-    // const response = await fetch(
-    //   `${this.baseUrl}/payment/iyzipos/checkoutform/auth/ecommerce/detail`,
-    //   {
-    //     method:  'POST',
-    //     headers: {
-    //       'Content-Type':  'application/json',
-    //       'Authorization': this.buildAuthHeader(pkiString),
-    //       'x-iyzi-rnd':    generateRandomString(),
-    //     },
-    //     body: JSON.stringify(body),
-    //   }
-    // )
-    // const data = await response.json()
-    // return {
-    //   provider:       'iyzico',
-    //   paymentId:      String(data.paymentId ?? ''),
-    //   conversationId: data.conversationId ?? conversationId,
-    //   status:         data.status === 'success' ? 'success' : 'failure',
-    //   paidAmount:     parseFloat(data.paidPrice ?? '0'),
-    //   currency:       'TRY',
-    //   rawPayload:     data,
-    //   errorMessage:   data.errorMessage,
-    // }
+    // iyzico also includes a top-level status in the callback POST
+    // 'failure' here means the user cancelled or card declined before our detail call
+    const callbackStatus = typeof payload['status'] === 'string' ? payload['status'] : null
+    if (callbackStatus === 'failure') {
+      console.info('[iyzico] Callback reported failure before detail call | conversationId:', conversationId)
+      return {
+        provider:       'iyzico',
+        paymentId:      '',
+        conversationId,
+        status:         'failure',
+        rawPayload:     payload,
+        errorMessage:   'Ödeme kullanıcı tarafından iptal edildi veya kart reddedildi.',
+      }
+    }
 
-    // ── Placeholder ──────────────────────────────────────────────────────
-    throw new Error(
-      'iyzico callback verification is not yet live. ' +
-      'Uncomment the API call and configure credentials.'
+    // Server-side verification: fetch full payment detail
+    const randomKey = generateRandom()
+    const pkiString = buildPkiString({
+      locale:         'tr',
+      conversationId,
+      token,
+    })
+
+    const response = await fetch(
+      `${this.baseUrl}/payment/iyzipos/checkoutform/auth/ecommerce/detail`,
+      {
+        method:  'POST',
+        headers: this.buildHeaders(randomKey, pkiString),
+        body:    JSON.stringify({ locale: 'tr', conversationId, token }),
+      }
     )
+
+    let data: IyzicoDetailResponse
+    try {
+      data = (await response.json()) as IyzicoDetailResponse
+    } catch {
+      throw new Error(`iyzico detail returned non-JSON response (HTTP ${response.status})`)
+    }
+
+    const rawPayload = { ...payload, detail: data } as Record<string, unknown>
+
+    if (data.status !== 'success') {
+      const errMsg = data.errorMessage ?? data.errorCode ?? 'payment_failed'
+      console.info('[iyzico] Payment verification failed:', errMsg, '| conversationId:', conversationId)
+      return {
+        provider:       'iyzico',
+        paymentId:      data.paymentId ?? '',
+        conversationId: data.conversationId ?? conversationId,
+        status:         'failure',
+        rawPayload,
+        errorMessage:   errMsg,
+      }
+    }
+
+    // fraudStatus: 1 = not fraudulent, -1 = blocked by fraud
+    if (data.fraudStatus === -1) {
+      console.warn('[iyzico] Payment blocked by fraud filter | paymentId:', data.paymentId)
+      return {
+        provider:       'iyzico',
+        paymentId:      data.paymentId ?? '',
+        conversationId: data.conversationId ?? conversationId,
+        status:         'failure',
+        rawPayload,
+        errorMessage:   'Ödeme fraud filtresi tarafından engellendi.',
+      }
+    }
+
+    const paidAmount = data.paidPrice ? parseFloat(data.paidPrice) : undefined
+
+    console.info(
+      '[iyzico] Payment verified successfully | paymentId:', data.paymentId,
+      '| paidPrice:', data.paidPrice,
+      '| conversationId:', conversationId
+    )
+
+    return {
+      provider:       'iyzico',
+      paymentId:      data.paymentId ?? '',
+      conversationId: data.conversationId ?? conversationId,
+      status:         'success',
+      paidAmount,
+      currency:       data.currency ?? 'TRY',
+      rawPayload,
+    }
   }
 }
 
-/** Validate that required iyzico env vars are present. Logs a warning if not. */
+/** Returns true if required iyzico env vars are present. */
 export function validateIyzicoConfig(): boolean {
   const missing = ['IYZICO_API_KEY', 'IYZICO_SECRET_KEY', 'IYZICO_BASE_URL'].filter(
     (k) => !process.env[k]
