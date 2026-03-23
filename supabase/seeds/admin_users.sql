@@ -1,0 +1,12 @@
+-- Admin user seed template
+-- Run this manually in Supabase SQL editor or via psql.
+-- Do NOT commit real email addresses to version control.
+--
+-- Usage:
+--   INSERT INTO public.admin_users (email) VALUES ('you@example.com');
+--
+-- Remove an admin:
+--   DELETE FROM public.admin_users WHERE email = 'you@example.com';
+--
+-- List current admins:
+--   SELECT * FROM public.admin_users;

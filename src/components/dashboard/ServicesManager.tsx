@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Service } from '@/types/database'
 import { getBusinessTypeConfig } from '@/lib/businessTypes'
+import { checkServicesLimit } from '@/lib/plans'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import styles from './DataManager.module.css'
@@ -10,6 +11,7 @@ import styles from './DataManager.module.css'
 interface Props {
   businessId:   number
   businessType: string | null
+  planName:     string | null
   initial:      Service[]
 }
 
@@ -27,7 +29,7 @@ const EMPTY_FORM: FormState = {
   status:           'Aktif',
 }
 
-export function ServicesManager({ businessId, businessType, initial }: Props) {
+export function ServicesManager({ businessId, businessType, planName, initial }: Props) {
   const [items, setItems]       = useState<Service[]>(initial)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing]   = useState<Service | null>(null)
@@ -35,10 +37,18 @@ export function ServicesManager({ businessId, businessType, initial }: Props) {
   const [saving, setSaving]     = useState(false)
   const [error, setError]       = useState<string | null>(null)
 
-  const cfg    = getBusinessTypeConfig(businessType)
+  const cfg      = getBusinessTypeConfig(businessType)
   const supabase = createClient()
 
+  // Active services count for limit check
+  const activeCount = items.filter((s) => s.status === 'Aktif').length
+
   function openAdd() {
+    const check = checkServicesLimit(planName, activeCount)
+    if (!check.allowed) {
+      setError(check.reason)
+      return
+    }
     setEditing(null)
     setForm(EMPTY_FORM)
     setError(null)
@@ -77,6 +87,16 @@ export function ServicesManager({ businessId, businessType, initial }: Props) {
     e.preventDefault()
     const validationError = validate()
     if (validationError) { setError(validationError); return }
+
+    // Re-check limit at save time for new Aktif services
+    if (!editing && form.status === 'Aktif') {
+      const check = checkServicesLimit(planName, activeCount)
+      if (!check.allowed) { setError(check.reason); return }
+    }
+    if (editing && editing.status !== 'Aktif' && form.status === 'Aktif') {
+      const check = checkServicesLimit(planName, activeCount)
+      if (!check.allowed) { setError(check.reason); return }
+    }
 
     setSaving(true)
     setError(null)
@@ -127,6 +147,14 @@ export function ServicesManager({ businessId, businessType, initial }: Props) {
         <h1 className={styles.title}>{cfg.servicesLabel}</h1>
         <Button onClick={openAdd} size="sm">+ {cfg.serviceLabel} Ekle</Button>
       </div>
+
+      {/* Limit error shown above form */}
+      {error && !showForm ? (
+        <div className={styles.limitError}>
+          <p>{error}</p>
+          <a href="/settings" className={styles.limitUpgradeLink}>Planı yükselt →</a>
+        </div>
+      ) : null}
 
       {showForm && (
         <div className={styles.formCard}>

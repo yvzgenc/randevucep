@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { BookingFlow } from './BookingFlow'
+import { getPlanConfig } from '@/lib/plans'
 import type { Appointment, BusinessSettings } from '@/types/database'
 import styles from './booking.module.css'
 
@@ -25,7 +26,6 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   }
 }
 
-// Default settings when business_settings row is missing
 const DEFAULT_SETTINGS: Pick<BusinessSettings, 'opening_time' | 'closing_time' | 'slot_minutes'> = {
   opening_time: '09:00',
   closing_time: '18:00',
@@ -44,6 +44,37 @@ export default async function BookingPage({ params }: Props) {
     .maybeSingle()
 
   if (!business) notFound()
+
+  // Check online booking enabled for this plan
+  const { data: subscription } = await supabase
+    .from('subscriptions')
+    .select('plan_name')
+    .eq('business_id', business.id)
+    .maybeSingle()
+
+  const planConfig = getPlanConfig(subscription?.plan_name)
+
+  if (!planConfig.online_booking_enabled) {
+    return (
+      <div className={styles.page}>
+        <header className={styles.header}>
+          <div className={styles.bizName}>{business.name}</div>
+        </header>
+        <main className={styles.main}>
+          <div className={styles.closedBox}>
+            <p className={styles.closedTitle}>Online Rezervasyon Kapalı</p>
+            <p className={styles.closedDesc}>
+              Bu işletme şu an online rezervasyona kapalı.
+              {business.phone ? ` Randevu için ${business.phone} numarasını arayabilirsiniz.` : ''}
+            </p>
+          </div>
+        </main>
+        <footer className={styles.footer}>
+          <span>📅 RandevuCep ile çalışmaktadır</span>
+        </footer>
+      </div>
+    )
+  }
 
   const today  = new Date().toISOString().split('T')[0]
   const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
@@ -68,7 +99,6 @@ export default async function BookingPage({ params }: Props) {
       .eq('business_id', business.id)
       .eq('status', 'Aktif')
       .order('full_name'),
-    // anon reads busy slots via appts_anon_read_busy policy
     supabase
       .from('appointments')
       .select('appointment_date, appointment_time, staff_id, duration_minutes')

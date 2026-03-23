@@ -5,6 +5,7 @@ import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
 import { BUSINESS_TYPES, getBusinessTypeConfig, toBusinessType, type BusinessType } from '@/lib/businessTypes'
+import { TRIAL_DAYS } from '@/lib/plans'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import styles from './onboarding.module.css'
@@ -155,6 +156,23 @@ export function OnboardingFlow({
 
     if (userError) {
       console.error('User profile upsert failed:', userError.message)
+    }
+
+    // Create trial subscription only for NEW businesses.
+    // ignoreDuplicates: true ensures existing subscription (trial_ends_at included)
+    // is never overwritten on subsequent onboarding visits.
+    if (businessId && !existingBusinessId) {
+      const trialEnd = new Date()
+      trialEnd.setDate(trialEnd.getDate() + TRIAL_DAYS)
+      await supabase.from('subscriptions').insert(
+        {
+          business_id:   businessId,
+          plan_name:     'starter',
+          status:        'active',
+          trial_ends_at: trialEnd.toISOString(),
+        }
+      )
+      // Insert may fail silently if row already exists (unique index) — that's intentional
     }
 
     router.push('/dashboard')

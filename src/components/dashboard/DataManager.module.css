@@ -241,3 +241,30 @@
     display: none;
   }
 }
+
+/* Limit enforcement error */
+.limitError {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 16px;
+  background: rgba(240, 160, 32, 0.08);
+  border: 1px solid rgba(240, 160, 32, 0.3);
+  border-radius: var(--radius-md);
+  margin-bottom: 20px;
+  font-size: 13px;
+  flex-wrap: wrap;
+}
+
+.limitUpgradeLink {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+  flex-shrink: 0;
+}
+
+.limitUpgradeLink:hover {
+  text-decoration: underline;
+}

@@ -3,6 +3,7 @@ import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { StaffMember } from '@/types/database'
 import { getBusinessTypeConfig } from '@/lib/businessTypes'
+import { checkStaffLimit } from '@/lib/plans'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import styles from './DataManager.module.css'
@@ -10,6 +11,7 @@ import styles from './DataManager.module.css'
 interface Props {
   businessId:   number
   businessType: string | null
+  planName:     string | null
   initial:      StaffMember[]
 }
 
@@ -27,7 +29,7 @@ const EMPTY_FORM: FormState = {
   status:    'Aktif',
 }
 
-export function StaffManager({ businessId, businessType, initial }: Props) {
+export function StaffManager({ businessId, businessType, planName, initial }: Props) {
   const [items, setItems]       = useState<StaffMember[]>(initial)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing]   = useState<StaffMember | null>(null)
@@ -35,10 +37,19 @@ export function StaffManager({ businessId, businessType, initial }: Props) {
   const [saving, setSaving]     = useState(false)
   const [error, setError]       = useState<string | null>(null)
 
-  const cfg    = getBusinessTypeConfig(businessType)
+  const cfg      = getBusinessTypeConfig(businessType)
   const supabase = createClient()
 
+  // Active staff count (Aktif only — limit applies to active members)
+  const activeCount = items.filter((s) => s.status === 'Aktif').length
+
   function openAdd() {
+    // Enforce limit before opening form
+    const check = checkStaffLimit(planName, activeCount)
+    if (!check.allowed) {
+      setError(check.reason)
+      return
+    }
     setEditing(null)
     setForm(EMPTY_FORM)
     setError(null)
@@ -69,6 +80,23 @@ export function StaffManager({ businessId, businessType, initial }: Props) {
     if (!form.full_name.trim()) {
       setError('Ad Soyad zorunludur.')
       return
+    }
+
+    // If adding new AND setting Aktif, re-check limit at save time
+    if (!editing && form.status === 'Aktif') {
+      const check = checkStaffLimit(planName, activeCount)
+      if (!check.allowed) {
+        setError(check.reason)
+        return
+      }
+    }
+    // If editing and changing to Aktif, check that the limit allows it
+    if (editing && editing.status !== 'Aktif' && form.status === 'Aktif') {
+      const check = checkStaffLimit(planName, activeCount)
+      if (!check.allowed) {
+        setError(check.reason)
+        return
+      }
     }
 
     setSaving(true)
@@ -120,6 +148,14 @@ export function StaffManager({ businessId, businessType, initial }: Props) {
         <h1 className={styles.title}>{cfg.staffLabel}</h1>
         <Button onClick={openAdd} size="sm">+ {cfg.staffMemberLabel} Ekle</Button>
       </div>
+
+      {/* Limit error shown above form (when openAdd is blocked) */}
+      {error && !showForm ? (
+        <div className={styles.limitError}>
+          <p>{error}</p>
+          <a href="/settings" className={styles.limitUpgradeLink}>Planı yükselt →</a>
+        </div>
+      ) : null}
 
       {showForm && (
         <div className={styles.formCard}>

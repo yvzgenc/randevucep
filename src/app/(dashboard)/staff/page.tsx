@@ -18,16 +18,24 @@ export default async function StaffPage() {
 
   if (!business) redirect('/onboarding')
 
-  const { data: staffList } = await supabase
-    .from('staff')
-    .select('*')
-    .eq('business_id', business.id)
-    .order('full_name')
+  const [{ data: staffList }, { data: subscription }] = await Promise.all([
+    supabase
+      .from('staff')
+      .select('*')
+      .eq('business_id', business.id)
+      .order('full_name'),
+    supabase
+      .from('subscriptions')
+      .select('plan_name')
+      .eq('business_id', business.id)
+      .maybeSingle(),
+  ])
 
   return (
     <StaffManager
       businessId={business.id}
       businessType={business.business_type ?? null}
+      planName={subscription?.plan_name ?? null}
       initial={staffList ?? []}
     />
   )

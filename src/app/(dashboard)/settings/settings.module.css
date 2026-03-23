@@ -1,0 +1,210 @@
+.title {
+  font-size: 22px;
+  font-weight: 600;
+  letter-spacing: -0.3px;
+  margin-bottom: 28px;
+}
+
+.section {
+  margin-bottom: 36px;
+}
+
+.sectionTitle {
+  font-size: 14px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 14px;
+}
+
+/* ── Current plan card ── */
+.currentPlanCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+}
+
+.planMeta {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 8px;
+  flex-wrap: wrap;
+}
+
+.planBadge {
+  font-size: 14px;
+  font-weight: 700;
+  color: var(--color-accent);
+  background: rgba(91, 78, 248, 0.1);
+  border: 1px solid rgba(91, 78, 248, 0.25);
+  border-radius: 99px;
+  padding: 3px 12px;
+}
+
+.trialBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-success);
+  background: rgba(34, 199, 122, 0.1);
+  border: 1px solid rgba(34, 199, 122, 0.25);
+  border-radius: 99px;
+  padding: 3px 12px;
+}
+
+.expiredBadge {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-warning);
+  background: rgba(240, 160, 32, 0.1);
+  border: 1px solid rgba(240, 160, 32, 0.3);
+  border-radius: 99px;
+  padding: 3px 12px;
+}
+
+.planDesc {
+  font-size: 13px;
+  color: var(--color-muted);
+  margin-bottom: 16px;
+}
+
+.limitGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+  gap: 10px;
+}
+
+.limitItem {
+  background: rgba(255, 255, 255, 0.03);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  padding: 12px 14px;
+}
+
+.limitLabel {
+  display: block;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  margin-bottom: 4px;
+}
+
+.limitValue {
+  display: block;
+  font-size: 15px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Plan comparison grid ── */
+.planGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+  gap: 14px;
+}
+
+.planCard {
+  position: relative;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.planCardCurrent {
+  border-color: var(--color-accent);
+}
+
+.planCardHighlighted {
+  background: rgba(91, 78, 248, 0.05);
+}
+
+.popularBadge {
+  position: absolute;
+  top: -10px;
+  left: 50%;
+  transform: translateX(-50%);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  background: var(--color-accent);
+  color: #fff;
+  border-radius: 99px;
+  padding: 3px 12px;
+  white-space: nowrap;
+}
+
+.planCardHeader {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+
+.planCardLabel {
+  font-size: 16px;
+  font-weight: 700;
+}
+
+.planCardPrice {
+  font-size: 15px;
+  font-weight: 700;
+  color: var(--color-accent);
+}
+
+.planCardDesc {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+.planFeatures {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  font-size: 13px;
+  color: var(--color-muted);
+  flex: 1;
+}
+
+.planFeatures li::before {
+  content: '· ';
+}
+
+.currentLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent);
+  text-align: center;
+  padding: 8px;
+  border: 1px solid rgba(91, 78, 248, 0.25);
+  border-radius: var(--radius-sm);
+  background: rgba(91, 78, 248, 0.06);
+}
+
+.upgradeNote {
+  font-size: 12px;
+  color: var(--color-muted);
+  text-align: center;
+  padding: 8px;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+}
+
+.contactLink {
+  color: var(--color-accent);
+}
+
+.contactLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}

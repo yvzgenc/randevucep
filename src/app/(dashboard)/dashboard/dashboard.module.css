@@ -62,3 +62,55 @@
   color: var(--color-muted);
   font-size: 14px;
 }
+
+/* ── Trial / plan banner ── */
+.trialBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(91, 78, 248, 0.08);
+  border: 1px solid rgba(91, 78, 248, 0.25);
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.trialExpired {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 12px 18px;
+  background: rgba(240, 160, 32, 0.08);
+  border: 1px solid rgba(240, 160, 32, 0.3);
+  border-radius: var(--radius-md);
+  margin-bottom: 24px;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.trialText {
+  font-size: 14px;
+  color: var(--color-text);
+}
+
+.upgradeLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent);
+  white-space: nowrap;
+}
+
+.upgradeLink:hover {
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+
+.statPlan {
+  font-size: 20px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--color-accent);
+}

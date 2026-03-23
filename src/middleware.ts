@@ -16,6 +16,7 @@ const PROTECTED = [
   '/customers',
   '/settings',
   '/onboarding',
+  '/admin',
 ]
 
 const AUTH_ONLY = ['/login', '/register']

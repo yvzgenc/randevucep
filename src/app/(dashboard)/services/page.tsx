@@ -18,16 +18,24 @@ export default async function ServicesPage() {
 
   if (!business) redirect('/onboarding')
 
-  const { data: services } = await supabase
-    .from('services')
-    .select('*')
-    .eq('business_id', business.id)
-    .order('service_name')
+  const [{ data: services }, { data: subscription }] = await Promise.all([
+    supabase
+      .from('services')
+      .select('*')
+      .eq('business_id', business.id)
+      .order('service_name'),
+    supabase
+      .from('subscriptions')
+      .select('plan_name')
+      .eq('business_id', business.id)
+      .maybeSingle(),
+  ])
 
   return (
     <ServicesManager
       businessId={business.id}
       businessType={business.business_type ?? null}
+      planName={subscription?.plan_name ?? null}
       initial={services ?? []}
     />
   )

@@ -351,6 +351,7 @@ export type Database = {
           plan_name: string
           started_at: string | null
           status: string | null
+          trial_ends_at: string | null
         }
         Insert: {
           billing_period?: string | null
@@ -361,6 +362,7 @@ export type Database = {
           plan_name: string
           started_at?: string | null
           status?: string | null
+          trial_ends_at?: string | null
         }
         Update: {
           billing_period?: string | null
@@ -371,6 +373,7 @@ export type Database = {
           plan_name?: string
           started_at?: string | null
           status?: string | null
+          trial_ends_at?: string | null
         }
         Relationships: [
           {
@@ -420,11 +423,63 @@ export type Database = {
           },
         ]
       }
+      admin_users: {
+        Row: {
+          created_at: string
+          email:      string
+        }
+        Insert: {
+          created_at?: string
+          email:       string
+        }
+        Update: {
+          created_at?: string
+          email?:      string
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
+      admin_list_businesses: {
+        Args: Record<string, never>
+        Returns: {
+          id:             number
+          name:           string
+          business_type:  string | null
+          slug:           string
+          city:           string | null
+          created_at:     string | null
+          owner_email:    string | null
+          plan_name:      string | null
+          sub_status:     string | null
+          trial_ends_at:  string | null
+          is_active:      boolean | null
+        }[]
+      }
+      admin_get_business: {
+        Args: { p_id: number }
+        Returns: {
+          id:             number
+          name:           string
+          business_type:  string | null
+          slug:           string
+          city:           string | null
+          phone:          string | null
+          is_active:      boolean | null
+          created_at:     string | null
+          owner_email:    string | null
+          owner_id:       string | null
+          plan_name:      string | null
+          sub_id:         number | null
+          sub_status:     string | null
+          trial_ends_at:  string | null
+          billing_period: string | null
+          ends_at:        string | null
+        }[]
+      }
       book_appointment: {
         Args: {
           p_business_id:      number
