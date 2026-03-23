@@ -1,4 +1,3 @@
-
 export type Json =
   | string
   | number
@@ -12,58 +11,64 @@ export type Database = {
     Tables: {
       appointments: {
         Row: {
-          appointment_date: string
-          appointment_time: string
-          business_id: number | null
-          created_at: string | null
-          customer_name: string
-          customer_phone: string
-          duration_minutes: number
-          id: number
-          notes: string | null
-          price: number | null
-          service_id: number | null
-          service_name: string
-          source: string | null
-          staff_id: number | null
-          staff_name: string
-          status: string | null
+          appointment_date:  string
+          appointment_time:  string
+          business_id:       number | null
+          created_at:        string | null
+          customer_email:    string | null
+          customer_name:     string
+          customer_phone:    string
+          duration_minutes:  number
+          id:                number
+          notes:             string | null
+          price:             number | null
+          reminder_sent_at:  string | null
+          service_id:        number | null
+          service_name:      string
+          source:            string | null
+          staff_id:          number | null
+          staff_name:        string
+          status:            string | null
         }
         Insert: {
-          appointment_date: string
-          appointment_time: string
-          business_id?: number | null
-          created_at?: string | null
-          customer_name: string
-          customer_phone: string
-          duration_minutes?: number
-          id?: number
-          notes?: string | null
-          price?: number | null
-          service_id?: number | null
-          service_name: string
-          source?: string | null
-          staff_id?: number | null
-          staff_name: string
-          status?: string | null
+          appointment_date:   string
+          appointment_time:   string
+          business_id?:       number | null
+          created_at?:        string | null
+          customer_email?:    string | null
+          customer_name:      string
+          customer_phone:     string
+          duration_minutes?:  number
+          id?:                number
+          notes?:             string | null
+          price?:             number | null
+          reminder_sent_at?:  string | null
+          service_id?:        number | null
+          service_name:       string
+          source?:            string | null
+          staff_id?:          number | null
+          staff_name:         string
+          status?:            string | null
         }
         Update: {
-          appointment_date?: string
-          appointment_time?: string
-          business_id?: number | null
-          created_at?: string | null
-          customer_name?: string
-          customer_phone?: string
-          duration_minutes?: number
-          id?: number
-          notes?: string | null
-          price?: number | null
-          service_id?: number | null
-          service_name?: string
-          source?: string | null
-          staff_id?: number | null
-          staff_name?: string
-          status?: string | null
+          appointment_date?:   string
+          appointment_time?:   string
+          business_id?:        number | null
+          created_at?:         string | null
+          customer_email?:     string | null
+          customer_name?:      string
+          customer_phone?:     string
+          duration_minutes?:   number
+          id?:                 number
+          notes?:              string | null
+          price?:              number | null
+          reminder_sent_at?:   string | null
+          service_id?:         number | null
+          service_name?:       string
+          source?:             string | null
+          staff_id?:           number | null
+          staff_name?:         string
+          status?:             string | null
         }
         Relationships: [
           {
@@ -544,18 +549,19 @@ export type Database = {
       }
       book_appointment: {
         Args: {
-          p_business_id:      number
-          p_service_id:       number
-          p_service_name:     string
+          p_business_id:     number
+          p_service_id:      number
+          p_service_name:    string
           p_service_duration: number
-          p_staff_id:         number
-          p_staff_name:       string
-          p_customer_name:    string
-          p_customer_phone:   string
-          p_date:             string
-          p_time:             string
-          p_price:            number
-          p_notes:            string | null
+          p_staff_id:        number
+          p_staff_name:      string
+          p_customer_name:   string
+          p_customer_phone:  string
+          p_date:            string
+          p_time:            string
+          p_price:           number
+          p_notes:           string | null
+          p_customer_email?: string | null
         }
         Returns: {
           appointment_id?: number

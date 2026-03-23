@@ -2,6 +2,7 @@ import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import type { Appointment } from '@/types/database'
+import { AppointmentActions } from './AppointmentActions'
 import styles from './appointments.module.css'
 
 export const metadata: Metadata = { title: 'Randevular' }
@@ -9,9 +10,10 @@ export const metadata: Metadata = { title: 'Randevular' }
 function statusBadgeClass(status: string | null): string {
   switch (status) {
     case 'Tamamlandı': return styles.badgeDone
+    case 'Onaylı':     return styles.badgeConfirmed
     case 'İptal':
-    case 'Gelmedi':   return styles.badgeCancelled
-    default:          return styles.badgePending
+    case 'Gelmedi':    return styles.badgeCancelled
+    default:           return styles.badgePending
   }
 }
 
@@ -60,6 +62,7 @@ export default async function AppointmentsPage() {
             <span>Hizmet</span>
             <span>Personel</span>
             <span>Durum</span>
+            <span></span>
           </div>
           {list.map((appt) => (
             <div key={appt.id} className={styles.tableRow}>
@@ -79,6 +82,13 @@ export default async function AppointmentsPage() {
                 <span className={statusBadgeClass(appt.status)}>
                   {appt.status ?? 'Bekliyor'}
                 </span>
+              </span>
+              <span>
+                <AppointmentActions
+                  appointmentId={appt.id}
+                  currentStatus={appt.status}
+                  savedEmail={appt.customer_email ?? null}
+                />
               </span>
             </div>
           ))}
