@@ -1,3 +1,4 @@
+/* ── Page header ── */
 .header {
   display: flex;
   align-items: center;
@@ -7,32 +8,35 @@
 }
 
 .title {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
 }
 
 .count {
-  font-size: 13px;
+  font-size: 12px;
+  font-weight: 600;
   color: var(--color-muted);
-  background: rgba(255, 255, 255, 0.05);
+  background: rgba(255, 255, 255, 0.04);
   border: 1px solid var(--color-border);
   border-radius: 99px;
   padding: 3px 12px;
 }
 
+/* ── Empty state ── */
 .empty {
   background: var(--color-surface);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 48px 32px;
+  padding: 64px 32px;
   text-align: center;
 }
 
 .emptyTitle {
-  font-size: 15px;
+  font-size: 16px;
   font-weight: 600;
-  margin-bottom: 6px;
+  margin-bottom: 8px;
+  color: var(--color-text-2);
 }
 
 .emptyDesc {
@@ -40,138 +44,90 @@
   color: var(--color-muted);
   max-width: 360px;
   margin: 0 auto;
-  line-height: 1.6;
+  line-height: 1.65;
 }
 
+/* ── Table ── */
 .table {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .tableHeader {
   display: grid;
-  grid-template-columns: 130px 1.4fr 1.2fr 1fr 110px 40px;
+  grid-template-columns: 130px 1.4fr 1.2fr 1fr 120px 40px;
   gap: 12px;
-  padding: 10px 18px;
-  background: rgba(255, 255, 255, 0.03);
+  padding: 11px 20px;
+  background: var(--color-surface-2);
   border-bottom: 1px solid var(--color-border);
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.6px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.7px;
   text-transform: uppercase;
   color: var(--color-muted);
 }
 
 .tableRow {
   display: grid;
-  grid-template-columns: 130px 1.4fr 1.2fr 1fr 110px 40px;
+  grid-template-columns: 130px 1.4fr 1.2fr 1fr 120px 40px;
   gap: 12px;
-  padding: 13px 18px;
+  padding: 14px 20px;
   border-bottom: 1px solid var(--color-border);
-  font-size: 14px;
+  font-size: 13px;
   align-items: center;
   transition: background 0.1s;
 }
 
-.tableRow:last-child {
-  border-bottom: none;
-}
+.tableRow:last-child { border-bottom: none; }
+.tableRow:hover { background: rgba(255, 255, 255, 0.02); }
 
-.tableRow:hover {
-  background: rgba(255, 255, 255, 0.02);
-}
+.date   { display: block; font-weight: 600; font-size: 13px; }
+.time   { display: block; font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+.primary { display: block; font-weight: 500; color: var(--color-text); }
+.phone  { display: block; font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+.muted  { color: var(--color-muted); font-size: 12px; }
 
-.date {
-  display: block;
-  font-weight: 500;
-  font-size: 13px;
-}
-
-.time {
-  display: block;
-  font-size: 12px;
-  color: var(--color-muted);
-}
-
-.primary {
-  display: block;
-  font-weight: 500;
-}
-
-.phone {
-  display: block;
-  font-size: 12px;
-  color: var(--color-muted);
-}
-
-.muted {
-  color: var(--color-muted);
-  font-size: 13px;
-}
-
-/* Status badges */
+/* ── Status badges ── */
 .badgePending {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(240, 160, 32, 0.12);
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  background: var(--color-warning-bg);
   color: var(--color-warning);
-  border: 1px solid rgba(240, 160, 32, 0.25);
+  border: 1px solid rgba(245, 158, 11, 0.25);
 }
 
 .badgeDone {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(34, 199, 122, 0.12);
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  background: var(--color-success-bg);
   color: var(--color-success);
-  border: 1px solid rgba(34, 199, 122, 0.25);
+  border: 1px solid rgba(16, 185, 129, 0.25);
 }
 
 .badgeCancelled {
-  display: inline-block;
-  padding: 2px 10px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(239, 68, 68, 0.10);
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  background: var(--color-danger-bg);
   color: var(--color-danger);
   border: 1px solid rgba(239, 68, 68, 0.2);
 }
 
-@media (max-width: 768px) {
-  .tableHeader,
-  .tableRow {
-    grid-template-columns: 110px 1fr 110px;
-  }
-  .tableHeader span:nth-child(3),
-  .tableHeader span:nth-child(4),
-  .tableRow span:nth-child(3),
-  .tableRow span:nth-child(4) {
-    display: none;
-  }
-}
-
-/* ── Status: confirmed badge ── */
 .badgeConfirmed {
-  display: inline-flex;
-  align-items: center;
-  padding: 2px 8px;
-  border-radius: 99px;
-  font-size: 11px;
-  font-weight: 600;
-  background: rgba(91, 78, 248, 0.1);
-  color: #a08ef0;
-  border: 1px solid rgba(91, 78, 248, 0.2);
+  display: inline-flex; align-items: center;
+  padding: 3px 10px; border-radius: 99px;
+  font-size: 11px; font-weight: 600;
+  background: var(--color-accent-glow);
+  color: var(--color-accent-2);
+  border: 1px solid rgba(108, 92, 231, 0.25);
 }
 
-/* ── Appointment action controls ── */
+/* ── Action controls ── */
 .actionsWrap {
   position: relative;
   display: inline-flex;
@@ -191,42 +147,44 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s, color 0.15s;
+  transition: border-color 0.15s, color 0.15s, background 0.15s;
 }
 
 .actionTrigger:hover:not(:disabled) {
   border-color: var(--color-accent);
-  color: var(--color-accent);
+  color: var(--color-accent-2);
+  background: var(--color-accent-glow);
 }
 
 .actionDropdown {
   position: absolute;
   top: calc(100% + 6px);
   right: 0;
-  background: var(--color-surface);
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-md);
+  border-radius: var(--radius-lg);
   min-width: 200px;
   z-index: 50;
-  box-shadow: 0 8px 24px rgba(0,0,0,0.3);
+  box-shadow: var(--shadow-lg);
   overflow: hidden;
 }
 
 .actionEmailRow {
-  padding: 8px 10px;
+  padding: 10px 12px;
   border-bottom: 1px solid var(--color-border);
 }
 
 .actionEmailInput {
   width: 100%;
-  padding: 6px 8px;
+  padding: 7px 10px;
   background: var(--color-bg);
   border: 1px solid var(--color-border);
-  border-radius: var(--radius-sm);
+  border-radius: var(--radius-md);
   color: var(--color-text);
   font-size: 12px;
   font-family: inherit;
   box-sizing: border-box;
+  transition: border-color 0.15s;
 }
 
 .actionEmailInput:focus {
@@ -237,37 +195,42 @@
 .actionItem {
   display: block;
   width: 100%;
-  padding: 9px 14px;
+  padding: 10px 14px;
   background: transparent;
   border: none;
   text-align: left;
   font-size: 13px;
   font-family: inherit;
-  color: var(--color-text);
+  color: var(--color-text-2);
   cursor: pointer;
-  transition: background 0.12s;
+  transition: background 0.12s, color 0.12s;
 }
 
 .actionItem:hover:not(:disabled) {
-  background: rgba(255,255,255,0.05);
+  background: rgba(255, 255, 255, 0.04);
+  color: var(--color-text);
 }
 
-.actionSuccess {
-  font-size: 11px;
-  color: var(--color-success);
-  white-space: nowrap;
-}
-
-.actionError {
-  font-size: 11px;
-  color: var(--color-danger);
-  white-space: nowrap;
-}
+.actionSuccess { font-size: 11px; color: var(--color-success); white-space: nowrap; }
+.actionError   { font-size: 11px; color: var(--color-danger);  white-space: nowrap; }
 
 .actionEmailSaved {
   padding: 7px 14px;
   font-size: 12px;
   color: var(--color-muted);
   border-bottom: 1px solid var(--color-border);
-  background: rgba(255,255,255,0.02);
+  background: rgba(255, 255, 255, 0.01);
+}
+
+@media (max-width: 768px) {
+  .tableHeader,
+  .tableRow {
+    grid-template-columns: 110px 1fr 120px;
+  }
+  .tableHeader span:nth-child(3),
+  .tableHeader span:nth-child(4),
+  .tableRow > *:nth-child(3),
+  .tableRow > *:nth-child(4) {
+    display: none;
+  }
 }

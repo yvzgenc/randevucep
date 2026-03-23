@@ -6,16 +6,16 @@
 .main {
   flex: 1;
   min-width: 0;
-  padding: 28px;
+  padding: 32px 36px;
   overflow-y: auto;
+  max-width: 1200px;
+}
+
+@media (max-width: 1024px) {
+  .main { padding: 24px 24px; }
 }
 
 @media (max-width: 768px) {
-  .shell {
-    flex-direction: column;
-  }
-
-  .main {
-    padding: 16px;
-  }
+  .shell { flex-direction: column; }
+  .main  { padding: 20px 16px; }
 }

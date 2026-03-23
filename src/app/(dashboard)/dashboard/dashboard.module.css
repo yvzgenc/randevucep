@@ -1,56 +1,128 @@
+/* ── Page header ── */
 .header {
   display: flex;
   align-items: center;
   justify-content: space-between;
   flex-wrap: wrap;
   gap: 12px;
-  margin-bottom: 28px;
+  margin-bottom: 32px;
 }
 
 .title {
-  font-size: 22px;
-  font-weight: 600;
-  letter-spacing: -0.3px;
+  font-size: 24px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--color-text);
 }
 
 .bookingBadge {
-  font-size: 13px;
-  color: var(--color-accent);
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent-2);
   padding: 7px 14px;
-  border: 1px solid rgba(91, 78, 248, 0.3);
+  border: 1px solid rgba(108, 92, 231, 0.3);
   border-radius: var(--radius-md);
-  transition: background 0.15s;
+  transition: background 0.15s, border-color 0.15s;
 }
 
 .bookingBadge:hover {
-  background: rgba(91, 78, 248, 0.07);
+  background: var(--color-accent-glow);
+  border-color: rgba(108, 92, 231, 0.5);
 }
 
+/* ── Stat cards ── */
 .statsGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 16px;
-  margin-bottom: 28px;
+  grid-template-columns: repeat(auto-fill, minmax(190px, 1fr));
+  gap: 14px;
+  margin-bottom: 32px;
 }
 
 .statCard {
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 20px;
+  padding: 20px 22px;
+  transition: border-color 0.15s;
+}
+
+.statCard:hover {
+  border-color: var(--color-border-h);
 }
 
 .statLabel {
-  font-size: 12px;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
   color: var(--color-muted);
-  margin-bottom: 8px;
-  font-weight: 500;
+  margin-bottom: 10px;
 }
 
 .statValue {
-  font-size: 32px;
+  font-size: 34px;
   font-weight: 700;
-  letter-spacing: -1px;
+  letter-spacing: -1.5px;
+  color: var(--color-text);
+  line-height: 1;
+}
+
+.statPlan {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.5px;
+  color: var(--color-accent-2);
+}
+
+/* ── Banners ── */
+.trialBanner {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  background: rgba(108, 92, 231, 0.07);
+  border: 1px solid rgba(108, 92, 231, 0.22);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.trialExpired {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 13px 18px;
+  background: var(--color-warning-bg);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-lg);
+  margin-bottom: 24px;
+  font-size: 14px;
+  flex-wrap: wrap;
+}
+
+.trialText {
+  font-size: 14px;
+  color: var(--color-text-2);
+}
+
+.upgradeLink {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-accent-2);
+  white-space: nowrap;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  text-decoration-color: transparent;
+  transition: text-decoration-color 0.15s;
+}
+
+.upgradeLink:hover {
+  text-decoration-color: var(--color-accent-2);
 }
 
 .placeholder {
@@ -61,56 +133,4 @@
   text-align: center;
   color: var(--color-muted);
   font-size: 14px;
-}
-
-/* ── Trial / plan banner ── */
-.trialBanner {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 18px;
-  background: rgba(91, 78, 248, 0.08);
-  border: 1px solid rgba(91, 78, 248, 0.25);
-  border-radius: var(--radius-md);
-  margin-bottom: 24px;
-  flex-wrap: wrap;
-}
-
-.trialExpired {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 12px;
-  padding: 12px 18px;
-  background: rgba(240, 160, 32, 0.08);
-  border: 1px solid rgba(240, 160, 32, 0.3);
-  border-radius: var(--radius-md);
-  margin-bottom: 24px;
-  font-size: 14px;
-  flex-wrap: wrap;
-}
-
-.trialText {
-  font-size: 14px;
-  color: var(--color-text);
-}
-
-.upgradeLink {
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--color-accent);
-  white-space: nowrap;
-}
-
-.upgradeLink:hover {
-  text-decoration: underline;
-  text-underline-offset: 2px;
-}
-
-.statPlan {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.5px;
-  color: var(--color-accent);
 }

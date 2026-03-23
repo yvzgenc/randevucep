@@ -3,8 +3,8 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 20px 22px;
-  margin-bottom: 0;
+  padding: 22px 24px;
+  box-shadow: var(--shadow-sm);
 }
 
 .subHeader {
@@ -13,96 +13,60 @@
   justify-content: space-between;
   gap: 12px;
   flex-wrap: wrap;
-  margin-bottom: 16px;
+  margin-bottom: 18px;
 }
 
 .subPlanName {
-  font-size: 18px;
+  font-size: 20px;
   font-weight: 700;
-  letter-spacing: -0.2px;
+  letter-spacing: -0.3px;
 }
 
 /* ── Status badges ── */
 .badge {
   display: inline-flex;
   align-items: center;
-  padding: 3px 10px;
+  padding: 4px 12px;
   border-radius: 99px;
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.2px;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.3px;
   white-space: nowrap;
 }
 
-.badgeActive {
-  background: rgba(34, 199, 122, 0.1);
-  color: var(--color-success);
-  border: 1px solid rgba(34, 199, 122, 0.25);
-}
-
-.badgeTrial {
-  background: rgba(91, 78, 248, 0.1);
-  color: #a08ef0;
-  border: 1px solid rgba(91, 78, 248, 0.25);
-}
-
-.badgeWarning {
-  background: rgba(240, 160, 32, 0.1);
-  color: var(--color-warning);
-  border: 1px solid rgba(240, 160, 32, 0.3);
-}
-
-.badgeError {
-  background: rgba(239, 68, 68, 0.1);
-  color: var(--color-danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
-}
-
-.badgeNeutral {
-  background: rgba(255, 255, 255, 0.05);
-  color: var(--color-muted);
-  border: 1px solid var(--color-border);
-}
+.badgeActive  { background: var(--color-success-bg); color: var(--color-success); border: 1px solid rgba(16, 185, 129, 0.25); }
+.badgeTrial   { background: var(--color-accent-glow); color: var(--color-accent-2); border: 1px solid rgba(108, 92, 231, 0.3); }
+.badgeWarning { background: var(--color-warning-bg);  color: var(--color-warning); border: 1px solid rgba(245, 158, 11, 0.3); }
+.badgeError   { background: var(--color-danger-bg);   color: var(--color-danger);  border: 1px solid rgba(239, 68, 68, 0.2); }
+.badgeNeutral { background: rgba(255,255,255,0.04); color: var(--color-muted); border: 1px solid var(--color-border); }
 
 /* ── Detail grid ── */
 .detailGrid {
   display: grid;
-  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
-  gap: 10px;
+  grid-template-columns: repeat(auto-fill, minmax(170px, 1fr));
+  gap: 12px;
 }
 
-.detailItem {
-  display: flex;
-  flex-direction: column;
-  gap: 3px;
-}
+.detailItem { display: flex; flex-direction: column; gap: 3px; }
 
 .detailLabel {
-  font-size: 11px;
-  font-weight: 600;
-  letter-spacing: 0.4px;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
   color: var(--color-muted);
 }
 
-.detailValue {
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--color-text);
-}
-
-.detailValueMuted {
-  font-size: 13px;
-  color: var(--color-muted);
-}
+.detailValue      { font-size: 13px; font-weight: 500; color: var(--color-text); }
+.detailValueMuted { font-size: 13px; color: var(--color-muted); }
 
 /* ── Limit chips ── */
 .limitRow {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
-  margin-top: 16px;
-  padding-top: 16px;
+  margin-top: 18px;
+  padding-top: 18px;
   border-top: 1px solid var(--color-border);
 }
 
@@ -112,27 +76,21 @@
   gap: 5px;
   font-size: 12px;
   color: var(--color-muted);
-  background: rgba(255, 255, 255, 0.04);
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-sm);
   padding: 4px 10px;
 }
 
-.limitChipLabel {
-  color: var(--color-muted);
-}
-
-.limitChipValue {
-  color: var(--color-text);
-  font-weight: 600;
-}
+.limitChipLabel { color: var(--color-muted); }
+.limitChipValue { color: var(--color-text); font-weight: 600; }
 
 /* ── Empty state ── */
 .emptyState {
   background: var(--color-surface);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 32px 24px;
+  padding: 40px 24px;
   text-align: center;
   color: var(--color-muted);
   font-size: 14px;
@@ -144,17 +102,18 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   overflow: hidden;
+  box-shadow: var(--shadow-sm);
 }
 
 .tableHeader {
   display: grid;
   grid-template-columns: var(--pay-cols);
-  padding: 9px 16px;
-  background: rgba(255, 255, 255, 0.02);
+  padding: 10px 18px;
+  background: var(--color-surface-2);
   border-bottom: 1px solid var(--color-border);
-  font-size: 11px;
+  font-size: 10px;
   font-weight: 700;
-  letter-spacing: 0.5px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--color-muted);
   gap: 10px;
@@ -163,25 +122,19 @@
 .tableRow {
   display: grid;
   grid-template-columns: var(--pay-cols);
-  padding: 12px 16px;
+  padding: 13px 18px;
   border-bottom: 1px solid var(--color-border);
   font-size: 13px;
   align-items: center;
   gap: 10px;
+  transition: background 0.1s;
 }
 
-.tableRow:last-child {
-  border-bottom: none;
-}
+.tableRow:last-child { border-bottom: none; }
+.tableRow:hover { background: rgba(255, 255, 255, 0.02); }
 
-.cellPrimary {
-  font-weight: 600;
-}
-
-.cellMuted {
-  color: var(--color-muted);
-  font-size: 12px;
-}
+.cellPrimary { font-weight: 600; }
+.cellMuted   { color: var(--color-muted); font-size: 12px; }
 
 .refCode {
   font-family: ui-monospace, monospace;
@@ -190,30 +143,14 @@
   word-break: break-all;
 }
 
-.failureNote {
-  font-size: 11px;
-  color: var(--color-danger);
-  margin-top: 2px;
-}
-
-.emptyPayments {
-  padding: 32px 16px;
-  text-align: center;
-  color: var(--color-muted);
-  font-size: 13px;
-}
+.failureNote { font-size: 11px; color: var(--color-danger); margin-top: 2px; }
+.emptyPayments { padding: 32px 16px; text-align: center; color: var(--color-muted); font-size: 13px; }
 
 @media (max-width: 700px) {
-  .detailGrid {
-    grid-template-columns: 1fr 1fr;
-  }
+  .detailGrid    { grid-template-columns: 1fr 1fr; }
 }
 
 @media (max-width: 480px) {
-  .detailGrid {
-    grid-template-columns: 1fr;
-  }
-  .limitRow {
-    flex-direction: column;
-  }
+  .detailGrid { grid-template-columns: 1fr; }
+  .limitRow   { flex-direction: column; }
 }

@@ -1,51 +1,36 @@
-.wrapper {
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
+.wrapper { display: flex; flex-direction: column; gap: 6px; }
 
 .label {
-  font-size: 13px;
-  font-weight: 500;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.3px;
+  text-transform: uppercase;
   color: var(--color-muted);
 }
 
 .input {
   width: 100%;
-  padding: 9px 12px;
-  background: var(--color-surface);
+  padding: 10px 13px;
+  background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
   font-size: 14px;
   outline: none;
-  transition: border-color 0.15s;
+  transition: border-color 0.15s, box-shadow 0.15s;
   appearance: none;
 }
 
-.input::placeholder {
-  color: var(--color-muted);
-  opacity: 0.6;
-}
+.input::placeholder { color: var(--color-muted); opacity: 0.5; }
 
 .input:focus {
   border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(108, 92, 231, 0.12);
 }
 
-.select {
-  cursor: pointer;
-}
+.select { cursor: pointer; }
+.hasError { border-color: var(--color-danger); }
+.hasError:focus { box-shadow: 0 0 0 3px rgba(239, 68, 68, 0.12); }
 
-.hasError {
-  border-color: var(--color-danger);
-}
-
-.error {
-  font-size: 12px;
-  color: var(--color-danger);
-}
-
-.hint {
-  font-size: 12px;
-  color: var(--color-muted);
-}
+.error { font-size: 12px; color: var(--color-danger); }
+.hint  { font-size: 12px; color: var(--color-muted); }
