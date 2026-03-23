@@ -1,46 +1,48 @@
 import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
+import { redirect }      from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { trialDaysRemaining, getPlanConfig } from '@/lib/plans'
+import { AnalyticsSection }  from './AnalyticsSection'
 import styles from './dashboard.module.css'
 
 export const metadata: Metadata = { title: 'Genel Bakış' }
 
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient()
-  const { data: { user } } = await supabase.auth.getUser()
+
+  const authQuery = await supabase.auth.getUser()
+  const user = authQuery.data.user
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
+  // Fetch business — new query-object pattern
+  const bizQuery = await supabase
     .from('businesses')
     .select('*')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!business) redirect('/onboarding')
+  if (bizQuery.error || !bizQuery.data) redirect('/onboarding')
+  const business = bizQuery.data
 
   const today = new Date().toISOString().split('T')[0]
 
-  const [
-    { count: todayCount },
-    { count: totalCount },
-    { data: subscription },
-  ] = await Promise.all([
+  // Parallel fetches: today count, subscription
+  const [todayQ, subQ] = await Promise.all([
     supabase
       .from('appointments')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('business_id', business.id)
       .eq('appointment_date', today),
-    supabase
-      .from('appointments')
-      .select('*', { count: 'exact', head: true })
-      .eq('business_id', business.id),
     supabase
       .from('subscriptions')
       .select('*')
       .eq('business_id', business.id)
       .maybeSingle(),
   ])
+
+  const todayCount  = todayQ.count ?? 0
+  // subQ.data is null when no subscription exists — safe to use with ?.
+  const subscription = subQ.data ?? null
 
   const planConfig  = getPlanConfig(subscription?.plan_name)
   const trialDays   = trialDaysRemaining(subscription?.trial_ends_at ?? null)
@@ -82,14 +84,11 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* Quick stat row (existing) */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Bugünkü Randevular</p>
-          <p className={styles.statValue}>{todayCount ?? 0}</p>
-        </div>
-        <div className={styles.statCard}>
-          <p className={styles.statLabel}>Toplam Randevu</p>
-          <p className={styles.statValue}>{totalCount ?? 0}</p>
+          <p className={styles.statValue}>{todayCount}</p>
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Aktif Plan</p>
@@ -97,9 +96,8 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      <div className={styles.placeholder}>
-        <p>Randevu takvimi ve detaylı istatistikler yakında eklenecek.</p>
-      </div>
+      {/* Analytics section */}
+      <AnalyticsSection supabase={supabase} businessId={business.id} />
     </div>
   )
 }
