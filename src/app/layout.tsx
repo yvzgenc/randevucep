@@ -4,10 +4,10 @@ import './globals.css'
 
 export const metadata: Metadata = {
   title: {
-    default: 'SalonCep',
-    template: '%s | SalonCep',
+    default:  'RandevuCep',
+    template: '%s | RandevuCep',
   },
-  description: 'Güzellik salonu ve berber randevu yönetim sistemi.',
+  description: 'Her sektör için çevrimiçi randevu yönetim sistemi.',
 }
 
 export default function RootLayout({

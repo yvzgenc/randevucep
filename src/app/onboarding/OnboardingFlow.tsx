@@ -4,32 +4,54 @@ import React from 'react'
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
 import { createClient } from '@/lib/supabase/client'
+import { BUSINESS_TYPES, getBusinessTypeConfig, toBusinessType, type BusinessType } from '@/lib/businessTypes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import styles from './onboarding.module.css'
 
 interface Props {
-  userId: string
-  userEmail: string
-  fullName: string
+  userId:             string
+  userEmail:          string
+  fullName:           string
   existingBusinessId: number | null
+  existingType:       string | null
+  // Prefill values for edit/pending state
+  existingName:       string | null
+  existingSlug:       string | null
+  existingPhone:      string | null
+  existingCity:       string | null
 }
+
+type Step = 'type' | 'info'
 
 export function OnboardingFlow({
   userId,
   userEmail,
   fullName,
   existingBusinessId,
+  existingType,
+  existingName,
+  existingSlug,
+  existingPhone,
+  existingCity,
 }: Props) {
   const router = useRouter()
 
-  const [name, setName]   = useState('')
-  const [slug, setSlug]   = useState('')
-  const [phone, setPhone] = useState('')
-  const [city, setCity]   = useState('')
+  const [step, setStep]               = useState<Step>(existingType ? 'info' : 'type')
+  const [businessType, setBusinessType] = useState<BusinessType>(
+    toBusinessType(existingType)
+  )
+
+  // Prefill form with existing values when editing a pending business
+  const [name, setName]   = useState(existingName  ?? '')
+  const [slug, setSlug]   = useState(existingSlug  ?? '')
+  const [phone, setPhone] = useState(existingPhone ?? '')
+  const [city, setCity]   = useState(existingCity  ?? '')
 
   const [error, setError]     = useState<string | null>(null)
   const [loading, setLoading] = useState(false)
+
+  const config = getBusinessTypeConfig(businessType)
 
   function deriveSlug(value: string): string {
     return value
@@ -42,7 +64,10 @@ export function OnboardingFlow({
 
   function handleNameChange(value: string) {
     setName(value)
-    setSlug(deriveSlug(value))
+    // Only auto-derive slug when slug is still empty or was auto-derived
+    if (!existingSlug) {
+      setSlug(deriveSlug(value))
+    }
   }
 
   async function handleSubmit(e: React.FormEvent) {
@@ -52,12 +77,11 @@ export function OnboardingFlow({
     const trimmedSlug = slug.trim()
 
     if (!trimmedName || !trimmedSlug) {
-      setError('İşletme adı ve rezervasyon URL\'si zorunludur.')
+      setError("İşletme adı ve rezervasyon URL'si zorunludur.")
       return
     }
-
     if (trimmedSlug.length < 3) {
-      setError('Rezervasyon URL\'si en az 3 karakter olmalıdır.')
+      setError("Rezervasyon URL'si en az 3 karakter olmalıdır.")
       return
     }
 
@@ -66,16 +90,16 @@ export function OnboardingFlow({
 
     const supabase = createClient()
 
-    // 1. Upsert the business record
     const businessPayload = {
-      owner_id: userId,
-      name: trimmedName,
-      slug: trimmedSlug,
-      phone: phone.trim() || null,
-      city: city.trim() || null,
+      owner_id:             userId,
+      name:                 trimmedName,
+      slug:                 trimmedSlug,
+      phone:                phone.trim() || null,
+      city:                 city.trim() || null,
+      business_type:        businessType,
       onboarding_completed: true,
-      is_active: true,
-      plan: 'starter',
+      is_active:            true,
+      plan:                 'starter',
     }
 
     let businessId: number | null = existingBusinessId
@@ -89,7 +113,7 @@ export function OnboardingFlow({
       if (updateError) {
         setError(
           updateError.message.includes('unique')
-            ? 'Bu rezervasyon URL\'si kullanılıyor. Başka bir tane deneyin.'
+            ? "Bu rezervasyon URL'si kullanılıyor. Başka bir tane deneyin."
             : updateError.message
         )
         setLoading(false)
@@ -105,7 +129,7 @@ export function OnboardingFlow({
       if (insertError) {
         setError(
           insertError.message.includes('unique')
-            ? 'Bu rezervasyon URL\'si kullanılıyor. Başka bir tane deneyin.'
+            ? "Bu rezervasyon URL'si kullanılıyor. Başka bir tane deneyin."
             : insertError.message
         )
         setLoading(false)
@@ -115,23 +139,21 @@ export function OnboardingFlow({
       businessId = inserted.id
     }
 
-    // 2. Upsert the user profile in public.users
     const { error: userError } = await supabase
       .from('users')
       .upsert(
         {
-          id: userId,
-          email: userEmail,
-          full_name: fullName || null,
+          id:          userId,
+          email:       userEmail,
+          full_name:   fullName || null,
           business_id: businessId,
-          role: 'owner',
-          is_active: true,
+          role:        'owner',
+          is_active:   true,
         },
         { onConflict: 'id' }
       )
 
     if (userError) {
-      // Non-fatal: profile upsert failed, still proceed to dashboard
       console.error('User profile upsert failed:', userError.message)
     }
 
@@ -139,13 +161,55 @@ export function OnboardingFlow({
     router.refresh()
   }
 
+  // ── Step 1: Business type selection ──────────────────────────────────────
+
+  if (step === 'type') {
+    return (
+      <div className={styles.page}>
+        <div className={styles.card}>
+          <div className={styles.logo}>📅 RandevuCep</div>
+          <h1 className={styles.heading}>İşletme Türünü Seçin</h1>
+          <p className={styles.sub}>Arayüzü işletmenize özelleştireceğiz.</p>
+
+          <div className={styles.typeGrid}>
+            {BUSINESS_TYPES.map((type) => {
+              const cfg = getBusinessTypeConfig(type)
+              return (
+                <button
+                  key={type}
+                  className={[
+                    styles.typeCard,
+                    businessType === type ? styles.typeCardSelected : '',
+                  ].filter(Boolean).join(' ')}
+                  onClick={() => setBusinessType(type)}
+                >
+                  <span className={styles.typeIcon}>{cfg.icon}</span>
+                  <span className={styles.typeLabel}>{cfg.label}</span>
+                </button>
+              )
+            })}
+          </div>
+
+          <Button fullWidth onClick={() => setStep('info')}>
+            Devam Et →
+          </Button>
+        </div>
+      </div>
+    )
+  }
+
+  // ── Step 2: Business info ─────────────────────────────────────────────────
+
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.logo}>✂ SalonCep</div>
+        <div className={styles.logo}>{config.icon} RandevuCep</div>
         <h1 className={styles.heading}>İşletmenizi Kurun</h1>
         <p className={styles.sub}>
-          Birkaç bilgi ile başlayalım. Her şeyi sonradan değiştirebilirsiniz.
+          <button className={styles.changeType} onClick={() => setStep('type')}>
+            {config.label}
+          </button>{' '}
+          için birkaç bilgi girin.
         </p>
 
         <form onSubmit={handleSubmit} className={styles.form}>
@@ -155,7 +219,7 @@ export function OnboardingFlow({
             id="name"
             value={name}
             onChange={(e) => handleNameChange(e.target.value)}
-            placeholder="Güzellik Salonu Ayşe"
+            placeholder={`${config.label} Ayşe`}
             required
           />
           <Input
@@ -164,8 +228,8 @@ export function OnboardingFlow({
             id="slug"
             value={slug}
             onChange={(e) => setSlug(deriveSlug(e.target.value))}
-            placeholder="ayse-guzellik"
-            hint={`Rezervasyon sayfanız: /book/${slug || 'salon-adi'}`}
+            placeholder="ayse-berber"
+            hint={`Rezervasyon sayfanız: /book/${slug || 'isletme-adi'}`}
             required
           />
           <Input

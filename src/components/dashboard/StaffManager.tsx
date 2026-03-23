@@ -2,20 +2,22 @@
 import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { StaffMember } from '@/types/database'
+import { getBusinessTypeConfig } from '@/lib/businessTypes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import styles from './DataManager.module.css'
 
 interface Props {
-  businessId: number
-  initial: StaffMember[]
+  businessId:   number
+  businessType: string | null
+  initial:      StaffMember[]
 }
 
 interface FormState {
   full_name: string
-  phone: string
-  title: string
-  status: 'Aktif' | 'Pasif'
+  phone:     string
+  title:     string
+  status:    'Aktif' | 'Pasif'
 }
 
 const EMPTY_FORM: FormState = {
@@ -25,7 +27,7 @@ const EMPTY_FORM: FormState = {
   status:    'Aktif',
 }
 
-export function StaffManager({ businessId, initial }: Props) {
+export function StaffManager({ businessId, businessType, initial }: Props) {
   const [items, setItems]       = useState<StaffMember[]>(initial)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing]   = useState<StaffMember | null>(null)
@@ -33,6 +35,7 @@ export function StaffManager({ businessId, initial }: Props) {
   const [saving, setSaving]     = useState(false)
   const [error, setError]       = useState<string | null>(null)
 
+  const cfg    = getBusinessTypeConfig(businessType)
   const supabase = createClient()
 
   function openAdd() {
@@ -63,7 +66,10 @@ export function StaffManager({ businessId, initial }: Props) {
 
   async function handleSave(e: React.FormEvent) {
     e.preventDefault()
-    if (!form.full_name.trim()) { setError('Ad Soyad zorunludur.'); return }
+    if (!form.full_name.trim()) {
+      setError('Ad Soyad zorunludur.')
+      return
+    }
 
     setSaving(true)
     setError(null)
@@ -83,7 +89,6 @@ export function StaffManager({ businessId, initial }: Props) {
         .eq('id', editing.id)
 
       if (dbErr) { setError(dbErr.message); setSaving(false); return }
-
       setItems((prev) =>
         prev.map((s) => (s.id === editing.id ? { ...s, ...payload } : s))
       )
@@ -103,13 +108,8 @@ export function StaffManager({ businessId, initial }: Props) {
   }
 
   async function handleDelete(item: StaffMember) {
-    if (!confirm(`"${item.full_name}" adlı personeli silmek istediğinizden emin misiniz?`)) return
-
-    const { error: dbErr } = await supabase
-      .from('staff')
-      .delete()
-      .eq('id', item.id)
-
+    if (!confirm(`"${item.full_name}" adlı ${cfg.staffMemberLabel.toLowerCase()}i silmek istediğinizden emin misiniz?`)) return
+    const { error: dbErr } = await supabase.from('staff').delete().eq('id', item.id)
     if (dbErr) { alert(dbErr.message); return }
     setItems((prev) => prev.filter((s) => s.id !== item.id))
   }
@@ -117,14 +117,14 @@ export function StaffManager({ businessId, initial }: Props) {
   return (
     <div>
       <div className={styles.pageHeader}>
-        <h1 className={styles.title}>Personel</h1>
-        <Button onClick={openAdd} size="sm">+ Personel Ekle</Button>
+        <h1 className={styles.title}>{cfg.staffLabel}</h1>
+        <Button onClick={openAdd} size="sm">+ {cfg.staffMemberLabel} Ekle</Button>
       </div>
 
       {showForm && (
         <div className={styles.formCard}>
           <h2 className={styles.formTitle}>
-            {editing ? 'Personeli Düzenle' : 'Yeni Personel'}
+            {editing ? `${cfg.staffMemberLabel} Düzenle` : `Yeni ${cfg.staffMemberLabel}`}
           </h2>
           <form onSubmit={handleSave} className={styles.form}>
             <Input
@@ -132,7 +132,7 @@ export function StaffManager({ businessId, initial }: Props) {
               id="full_name"
               value={form.full_name}
               onChange={(e) => setForm((f) => ({ ...f, full_name: e.target.value }))}
-              placeholder="Ayşe Yılmaz"
+              placeholder={cfg.staffNamePlaceholder}
               required
             />
             <div className={styles.row2}>
@@ -141,7 +141,7 @@ export function StaffManager({ businessId, initial }: Props) {
                 id="title"
                 value={form.title}
                 onChange={(e) => setForm((f) => ({ ...f, title: e.target.value }))}
-                placeholder="Kuaför"
+                placeholder={cfg.staffTitlePlaceholder}
               />
               <Input
                 label="Telefon"
@@ -182,8 +182,8 @@ export function StaffManager({ businessId, initial }: Props) {
 
       {items.length === 0 ? (
         <div className={styles.empty}>
-          <p className={styles.emptyTitle}>Henüz personel eklenmemiş</p>
-          <p className={styles.emptyDesc}>İlk personeli ekleyerek başlayın.</p>
+          <p className={styles.emptyTitle}>Henüz {cfg.staffMemberLabel.toLowerCase()} eklenmemiş</p>
+          <p className={styles.emptyDesc}>İlk {cfg.staffMemberLabel.toLowerCase()}i ekleyerek başlayın.</p>
         </div>
       ) : (
         <div className={styles.table}>

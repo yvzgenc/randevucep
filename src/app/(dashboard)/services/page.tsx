@@ -27,6 +27,7 @@ export default async function ServicesPage() {
   return (
     <ServicesManager
       businessId={business.id}
+      businessType={business.business_type ?? null}
       initial={services ?? []}
     />
   )

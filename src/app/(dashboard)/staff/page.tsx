@@ -27,6 +27,7 @@ export default async function StaffPage() {
   return (
     <StaffManager
       businessId={business.id}
+      businessType={business.business_type ?? null}
       initial={staffList ?? []}
     />
   )

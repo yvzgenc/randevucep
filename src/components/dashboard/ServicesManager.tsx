@@ -2,30 +2,32 @@
 import React, { useState } from 'react'
 import { createClient } from '@/lib/supabase/client'
 import type { Service } from '@/types/database'
+import { getBusinessTypeConfig } from '@/lib/businessTypes'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
 import styles from './DataManager.module.css'
 
 interface Props {
-  businessId: number
-  initial: Service[]
+  businessId:   number
+  businessType: string | null
+  initial:      Service[]
 }
 
 interface FormState {
-  service_name: string
+  service_name:     string
   duration_minutes: string
-  price: string
-  status: 'Aktif' | 'Pasif'
+  price:            string
+  status:           'Aktif' | 'Pasif'
 }
 
 const EMPTY_FORM: FormState = {
-  service_name: '',
+  service_name:     '',
   duration_minutes: '30',
-  price: '',
-  status: 'Aktif',
+  price:            '',
+  status:           'Aktif',
 }
 
-export function ServicesManager({ businessId, initial }: Props) {
+export function ServicesManager({ businessId, businessType, initial }: Props) {
   const [items, setItems]       = useState<Service[]>(initial)
   const [showForm, setShowForm] = useState(false)
   const [editing, setEditing]   = useState<Service | null>(null)
@@ -33,6 +35,7 @@ export function ServicesManager({ businessId, initial }: Props) {
   const [saving, setSaving]     = useState(false)
   const [error, setError]       = useState<string | null>(null)
 
+  const cfg    = getBusinessTypeConfig(businessType)
   const supabase = createClient()
 
   function openAdd() {
@@ -62,7 +65,7 @@ export function ServicesManager({ businessId, initial }: Props) {
   }
 
   function validate(): string | null {
-    if (!form.service_name.trim()) return 'Hizmet adı zorunludur.'
+    if (!form.service_name.trim()) return `${cfg.serviceLabel} adı zorunludur.`
     const dur = Number(form.duration_minutes)
     if (!dur || dur < 5 || dur > 480) return 'Süre 5–480 dakika arasında olmalıdır.'
     const price = Number(form.price)
@@ -93,7 +96,6 @@ export function ServicesManager({ businessId, initial }: Props) {
         .eq('id', editing.id)
 
       if (dbErr) { setError(dbErr.message); setSaving(false); return }
-
       setItems((prev) =>
         prev.map((s) => (s.id === editing.id ? { ...s, ...payload } : s))
       )
@@ -113,13 +115,8 @@ export function ServicesManager({ businessId, initial }: Props) {
   }
 
   async function handleDelete(item: Service) {
-    if (!confirm(`"${item.service_name}" hizmetini silmek istediğinizden emin misiniz?`)) return
-
-    const { error: dbErr } = await supabase
-      .from('services')
-      .delete()
-      .eq('id', item.id)
-
+    if (!confirm(`"${item.service_name}" ${cfg.serviceLabel.toLowerCase()}ini silmek istediğinizden emin misiniz?`)) return
+    const { error: dbErr } = await supabase.from('services').delete().eq('id', item.id)
     if (dbErr) { alert(dbErr.message); return }
     setItems((prev) => prev.filter((s) => s.id !== item.id))
   }
@@ -127,22 +124,22 @@ export function ServicesManager({ businessId, initial }: Props) {
   return (
     <div>
       <div className={styles.pageHeader}>
-        <h1 className={styles.title}>Hizmetler</h1>
-        <Button onClick={openAdd} size="sm">+ Hizmet Ekle</Button>
+        <h1 className={styles.title}>{cfg.servicesLabel}</h1>
+        <Button onClick={openAdd} size="sm">+ {cfg.serviceLabel} Ekle</Button>
       </div>
 
       {showForm && (
         <div className={styles.formCard}>
           <h2 className={styles.formTitle}>
-            {editing ? 'Hizmeti Düzenle' : 'Yeni Hizmet'}
+            {editing ? `${cfg.serviceLabel} Düzenle` : `Yeni ${cfg.serviceLabel}`}
           </h2>
           <form onSubmit={handleSave} className={styles.form}>
             <Input
-              label="Hizmet Adı *"
+              label={`${cfg.serviceLabel} Adı *`}
               id="service_name"
               value={form.service_name}
               onChange={(e) => setForm((f) => ({ ...f, service_name: e.target.value }))}
-              placeholder="Saç Kesimi"
+              placeholder={cfg.serviceNamePlaceholder}
               required
             />
             <div className={styles.row2}>
@@ -198,13 +195,13 @@ export function ServicesManager({ businessId, initial }: Props) {
 
       {items.length === 0 ? (
         <div className={styles.empty}>
-          <p className={styles.emptyTitle}>Henüz hizmet eklenmemiş</p>
-          <p className={styles.emptyDesc}>İlk hizmetinizi ekleyerek başlayın.</p>
+          <p className={styles.emptyTitle}>Henüz {cfg.serviceLabel.toLowerCase()} eklenmemiş</p>
+          <p className={styles.emptyDesc}>İlk {cfg.serviceLabel.toLowerCase()}i ekleyerek başlayın.</p>
         </div>
       ) : (
         <div className={styles.table}>
           <div className={styles.tableHeader}>
-            <span>Hizmet Adı</span>
+            <span>{cfg.serviceLabel} Adı</span>
             <span>Süre</span>
             <span>Fiyat</span>
             <span>Durum</span>

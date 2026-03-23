@@ -8,7 +8,7 @@ export default function RegisterPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.logo}>✂ SalonCep</div>
+        <div className={styles.logo}>📅 RandevuCep</div>
         <h1 className={styles.heading}>Hesap Oluştur</h1>
         <p className={styles.sub}>14 gün ücretsiz deneyin, kredi kartı gerekmez.</p>
         <RegisterForm />

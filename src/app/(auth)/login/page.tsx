@@ -9,7 +9,7 @@ export default function LoginPage() {
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.logo}>✂ SalonCep</div>
+        <div className={styles.logo}>📅 RandevuCep</div>
         <h1 className={styles.heading}>Giriş Yap</h1>
         <p className={styles.sub}>Hesabınıza erişmek için giriş yapın.</p>
         {/* Suspense required because LoginForm uses useSearchParams */}

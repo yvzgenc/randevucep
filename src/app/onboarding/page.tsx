@@ -7,11 +7,8 @@ export const metadata: Metadata = { title: 'İşletmenizi Kurun' }
 
 export default async function OnboardingPage() {
   const supabase = await createServerSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
 
-  // Middleware already guards this, but double-check for safety
   if (!user) {
     redirect('/login')
   }
@@ -22,21 +19,23 @@ export default async function OnboardingPage() {
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  // Already completed onboarding → go to dashboard
   if (business?.onboarding_completed) {
     redirect('/dashboard')
   }
 
-  // Pull full_name from auth metadata (set during signUp)
-  const fullName =
-    (user.user_metadata?.full_name as string | undefined) ?? ''
+  const fullName = (user.user_metadata?.full_name as string | undefined) ?? ''
 
   return (
     <OnboardingFlow
       userId={user.id}
       userEmail={user.email ?? ''}
       fullName={fullName}
-      existingBusinessId={business?.id ?? null}
+      existingBusinessId={business?.id            ?? null}
+      existingType={      business?.business_type ?? null}
+      existingName={      business?.name          ?? null}
+      existingSlug={      business?.slug          ?? null}
+      existingPhone={     business?.phone         ?? null}
+      existingCity={      business?.city          ?? null}
     />
   )
 }

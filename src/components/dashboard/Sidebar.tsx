@@ -37,7 +37,7 @@ export function Sidebar({ business, userEmail }: Props) {
     <>
       {/* Mobile top bar */}
       <div className={styles.mobileBar}>
-        <span className={styles.mobileLogo}>✂ SalonCep</span>
+        <span className={styles.mobileLogo}>📅 RandevuCep</span>
         <button
           className={styles.menuBtn}
           onClick={() => setOpen((v: boolean) => !v)}
@@ -50,7 +50,7 @@ export function Sidebar({ business, userEmail }: Props) {
       {/* Sidebar */}
       <aside className={`${styles.sidebar} ${open ? styles.open : ''}`}>
         <div className={styles.top}>
-          <div className={styles.logo}>✂ SalonCep</div>
+          <div className={styles.logo}>📅 RandevuCep</div>
           <div className={styles.bizName}>{business.name}</div>
           <div className={styles.plan}>{(business.plan ?? 'starter').toUpperCase()}</div>
         </div>

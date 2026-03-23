@@ -17,6 +17,7 @@ export type Database = {
           created_at: string | null
           customer_name: string
           customer_phone: string
+          duration_minutes: number
           id: number
           notes: string | null
           price: number | null
@@ -34,6 +35,7 @@ export type Database = {
           created_at?: string | null
           customer_name: string
           customer_phone: string
+          duration_minutes?: number
           id?: number
           notes?: string | null
           price?: number | null
@@ -51,6 +53,7 @@ export type Database = {
           created_at?: string | null
           customer_name?: string
           customer_phone?: string
+          duration_minutes?: number
           id?: number
           notes?: string | null
           price?: number | null
@@ -123,6 +126,7 @@ export type Database = {
       businesses: {
         Row: {
           address: string | null
+          business_type: string
           city: string | null
           created_at: string | null
           email: string | null
@@ -141,6 +145,7 @@ export type Database = {
         }
         Insert: {
           address?: string | null
+          business_type?: string | null
           city?: string | null
           created_at?: string | null
           email?: string | null
@@ -159,6 +164,7 @@ export type Database = {
         }
         Update: {
           address?: string | null
+          business_type?: string | null
           city?: string | null
           created_at?: string | null
           email?: string | null
@@ -419,7 +425,27 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      book_appointment: {
+        Args: {
+          p_business_id:      number
+          p_service_id:       number
+          p_service_name:     string
+          p_service_duration: number
+          p_staff_id:         number
+          p_staff_name:       string
+          p_customer_name:    string
+          p_customer_phone:   string
+          p_date:             string
+          p_time:             string
+          p_price:            number
+          p_notes:            string | null
+        }
+        Returns: {
+          appointment_id?: number
+          customer_id?:    number
+          error?:          string
+        }
+      }
     }
     Enums: {
       [_ in never]: never
