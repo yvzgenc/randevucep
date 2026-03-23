@@ -65,7 +65,7 @@ export async function updateAppointmentStatus(
     return { error: 'Randevu bulunamadı.' }
   }
 
-  const appt = appointmentQuery.data as unknown as AppointmentForStatusUpdate
+  const appt = appointmentQuery.data as AppointmentForStatusUpdate
 
   if (appt.business_id == null) {
     return { error: 'Randevuya bağlı işletme bulunamadı.' }

@@ -1,0 +1,219 @@
+/* ── Subscription summary card ── */
+.subCard {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 20px 22px;
+  margin-bottom: 0;
+}
+
+.subHeader {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  margin-bottom: 16px;
+}
+
+.subPlanName {
+  font-size: 18px;
+  font-weight: 700;
+  letter-spacing: -0.2px;
+}
+
+/* ── Status badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  padding: 3px 10px;
+  border-radius: 99px;
+  font-size: 12px;
+  font-weight: 600;
+  letter-spacing: 0.2px;
+  white-space: nowrap;
+}
+
+.badgeActive {
+  background: rgba(34, 199, 122, 0.1);
+  color: var(--color-success);
+  border: 1px solid rgba(34, 199, 122, 0.25);
+}
+
+.badgeTrial {
+  background: rgba(91, 78, 248, 0.1);
+  color: #a08ef0;
+  border: 1px solid rgba(91, 78, 248, 0.25);
+}
+
+.badgeWarning {
+  background: rgba(240, 160, 32, 0.1);
+  color: var(--color-warning);
+  border: 1px solid rgba(240, 160, 32, 0.3);
+}
+
+.badgeError {
+  background: rgba(239, 68, 68, 0.1);
+  color: var(--color-danger);
+  border: 1px solid rgba(239, 68, 68, 0.2);
+}
+
+.badgeNeutral {
+  background: rgba(255, 255, 255, 0.05);
+  color: var(--color-muted);
+  border: 1px solid var(--color-border);
+}
+
+/* ── Detail grid ── */
+.detailGrid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 10px;
+}
+
+.detailItem {
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+
+.detailLabel {
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.4px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+}
+
+.detailValue {
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-text);
+}
+
+.detailValueMuted {
+  font-size: 13px;
+  color: var(--color-muted);
+}
+
+/* ── Limit chips ── */
+.limitRow {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  margin-top: 16px;
+  padding-top: 16px;
+  border-top: 1px solid var(--color-border);
+}
+
+.limitChip {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 12px;
+  color: var(--color-muted);
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-sm);
+  padding: 4px 10px;
+}
+
+.limitChipLabel {
+  color: var(--color-muted);
+}
+
+.limitChipValue {
+  color: var(--color-text);
+  font-weight: 600;
+}
+
+/* ── Empty state ── */
+.emptyState {
+  background: var(--color-surface);
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 32px 24px;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 14px;
+}
+
+/* ── Payment history table ── */
+.tableWrap {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.tableHeader {
+  display: grid;
+  grid-template-columns: var(--pay-cols);
+  padding: 9px 16px;
+  background: rgba(255, 255, 255, 0.02);
+  border-bottom: 1px solid var(--color-border);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
+  text-transform: uppercase;
+  color: var(--color-muted);
+  gap: 10px;
+}
+
+.tableRow {
+  display: grid;
+  grid-template-columns: var(--pay-cols);
+  padding: 12px 16px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  align-items: center;
+  gap: 10px;
+}
+
+.tableRow:last-child {
+  border-bottom: none;
+}
+
+.cellPrimary {
+  font-weight: 600;
+}
+
+.cellMuted {
+  color: var(--color-muted);
+  font-size: 12px;
+}
+
+.refCode {
+  font-family: ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--color-muted);
+  word-break: break-all;
+}
+
+.failureNote {
+  font-size: 11px;
+  color: var(--color-danger);
+  margin-top: 2px;
+}
+
+.emptyPayments {
+  padding: 32px 16px;
+  text-align: center;
+  color: var(--color-muted);
+  font-size: 13px;
+}
+
+@media (max-width: 700px) {
+  .detailGrid {
+    grid-template-columns: 1fr 1fr;
+  }
+}
+
+@media (max-width: 480px) {
+  .detailGrid {
+    grid-template-columns: 1fr;
+  }
+  .limitRow {
+    flex-direction: column;
+  }
+}

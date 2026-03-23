@@ -9,8 +9,9 @@ import {
   trialDaysRemaining,
   isInTrial,
 } from '@/lib/plans'
-import styles from './settings.module.css'
-import { UpgradeButton } from './UpgradeButton'
+import styles       from './settings.module.css'
+import { UpgradeButton }  from './UpgradeButton'
+import { BillingSection } from './BillingSection'
 
 export const metadata: Metadata = { title: 'Ayarlar' }
 
@@ -19,30 +20,43 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
+  const { data: bizData } = await supabase
     .from('businesses')
     .select('*')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!business) redirect('/onboarding')
+  if (!bizData) redirect('/onboarding')
 
-  const { data: subscription } = await supabase
+  // business.id is non-nullable in schema; safe to use directly
+  const business = bizData
+
+  const { data: subData } = await supabase
     .from('subscriptions')
     .select('*')
     .eq('business_id', business.id)
     .maybeSingle()
 
-  const currentPlan  = toPlanName(subscription?.plan_name)
+  const currentPlan  = toPlanName(subData?.plan_name)
   const planConfig   = getPlanConfig(currentPlan)
-  const trialDays    = trialDaysRemaining(subscription?.trial_ends_at ?? null)
-  const inTrial      = isInTrial(subscription?.trial_ends_at ?? null)
+  const trialDays    = trialDaysRemaining(subData?.trial_ends_at ?? null)
+  const inTrial      = isInTrial(subData?.trial_ends_at ?? null)
 
   return (
     <div>
       <h1 className={styles.title}>Ayarlar &amp; Plan</h1>
 
-      {/* Current plan card */}
+      {/* ── Billing & Subscription ── */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Abonelik &amp; Faturalama</h2>
+        <BillingSection
+          supabase={supabase}
+          businessId={business.id}
+          planName={currentPlan}
+        />
+      </section>
+
+      {/* ── Current plan card ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Mevcut Plan</h2>
         <div className={styles.currentPlanCard}>
@@ -87,7 +101,7 @@ export default async function SettingsPage() {
         </div>
       </section>
 
-      {/* Plan comparison / upgrade */}
+      {/* ── Plan comparison / upgrade ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Planlar</h2>
         <div className={styles.planGrid}>
@@ -99,7 +113,7 @@ export default async function SettingsPage() {
                 key={planKey}
                 className={[
                   styles.planCard,
-                  isCurrent      ? styles.planCardCurrent     : '',
+                  isCurrent       ? styles.planCardCurrent     : '',
                   cfg.highlighted ? styles.planCardHighlighted : '',
                 ].filter(Boolean).join(' ')}
               >
