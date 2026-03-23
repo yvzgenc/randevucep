@@ -5,7 +5,7 @@ import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getBusinessTypeConfig } from '@/lib/businessTypes'
 import { getPlanConfig, isInTrial, trialDaysRemaining } from '@/lib/plans'
 import { EditForm } from './EditForm'
-import styles from '../admin.module.css'
+import styles from '../../admin.module.css'
 
 interface Props {
   params: Promise<{ id: string }>

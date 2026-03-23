@@ -1,3 +1,4 @@
+
 export type Json =
   | string
   | number
@@ -341,6 +342,58 @@ export type Database = {
           },
         ]
       }
+      payments: {
+        Row: {
+          id:                       number
+          business_id:              number
+          provider:                 string
+          provider_payment_id:      string | null
+          provider_conversation_id: string | null
+          plan_name:                string
+          amount:                   number
+          currency:                 string
+          status:                   string
+          payload_json:             Record<string, unknown> | null
+          paid_at:                  string | null
+          created_at:               string
+          updated_at:               string
+        }
+        Insert: {
+          business_id:              number
+          provider?:                string
+          provider_payment_id?:     string | null
+          provider_conversation_id?: string | null
+          plan_name:                string
+          amount:                   number
+          currency?:                string
+          status?:                  string
+          payload_json?:            Record<string, unknown> | null
+          paid_at?:                 string | null
+          created_at?:              string
+          updated_at?:              string
+        }
+        Update: {
+          provider?:                string
+          provider_payment_id?:     string | null
+          provider_conversation_id?: string | null
+          plan_name?:               string
+          amount?:                  number
+          currency?:                string
+          status?:                  string
+          payload_json?:            Record<string, unknown> | null
+          paid_at?:                 string | null
+          updated_at?:              string
+        }
+        Relationships: [
+          {
+            foreignKeyName: "payments_business_id_fkey"
+            columns: ["business_id"]
+            isOneToOne: false
+            referencedRelation: "businesses"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       subscriptions: {
         Row: {
           billing_period: string | null
@@ -446,17 +499,17 @@ export type Database = {
       admin_list_businesses: {
         Args: Record<string, never>
         Returns: {
-          id:             number
-          name:           string
-          business_type:  string | null
-          slug:           string
-          city:           string | null
-          created_at:     string | null
-          owner_email:    string | null
-          plan_name:      string | null
-          sub_status:     string | null
-          trial_ends_at:  string | null
-          is_active:      boolean | null
+          id:            number
+          name:          string
+          business_type: string | null
+          slug:          string
+          city:          string | null
+          created_at:    string | null
+          owner_email:   string | null
+          plan_name:     string | null
+          sub_status:    string | null
+          trial_ends_at: string | null
+          is_active:     boolean | null
         }[]
       }
       admin_get_business: {
@@ -479,6 +532,15 @@ export type Database = {
           billing_period: string | null
           ends_at:        string | null
         }[]
+      }
+      admin_update_subscription: {
+        Args: {
+          calling_user_id: string
+          p_business_id:   number
+          p_plan_name:     string
+          p_status:        string
+        }
+        Returns: Json
       }
       book_appointment: {
         Args: {
@@ -533,3 +595,4 @@ export type StaffMember      = Tables<"staff">
 export type Customer         = Tables<"customers">
 export type Subscription     = Tables<"subscriptions">
 export type BusinessSettings = Tables<"business_settings">
+export type Payment          = Tables<"payments">

@@ -10,6 +10,7 @@ import {
   isInTrial,
 } from '@/lib/plans'
 import styles from './settings.module.css'
+import { UpgradeButton } from './UpgradeButton'
 
 export const metadata: Metadata = { title: 'Ayarlar' }
 
@@ -133,15 +134,10 @@ export default async function SettingsPage() {
                 {isCurrent ? (
                   <div className={styles.currentLabel}>Mevcut planınız</div>
                 ) : (
-                  <div className={styles.upgradeNote}>
-                    Yakında — iletişim için{' '}
-                    <a
-                      href="mailto:destek@randevucep.com"
-                      className={styles.contactLink}
-                    >
-                      bize yazın
-                    </a>
-                  </div>
+                  <UpgradeButton
+                    planName={planKey}
+                    label={`${cfg.label}'a Geç →`}
+                  />
                 )}
               </div>
             )

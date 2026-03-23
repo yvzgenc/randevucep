@@ -3,7 +3,7 @@ import React, { useState, useTransition } from 'react'
 import { PLAN_NAMES } from '@/lib/plans'
 import { Button } from '@/components/ui/Button'
 import { updatePlan, updateStatus } from './actions'
-import styles from '../admin.module.css'
+import styles from '../../admin.module.css'
 
 interface Props {
   businessId: number
