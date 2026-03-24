@@ -1,0 +1,288 @@
+.wrap { display: flex; flex-direction: column; gap: 0; }
+
+/* ── Days grid ── */
+.daysGrid {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+  margin-bottom: 12px;
+}
+
+.dayRow {
+  display: grid;
+  grid-template-columns: 44px 120px 1fr;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 18px;
+  border-bottom: 1px solid var(--color-border);
+  transition: background .1s;
+}
+
+.dayRow:last-child { border-bottom: none; }
+
+.dayRowClosed { opacity: .55; }
+
+.dayName {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--color-text);
+}
+
+/* ── Toggle ── */
+.toggle {
+  width: 36px;
+  height: 20px;
+  border-radius: 99px;
+  background: rgba(255,255,255,.1);
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+  padding: 0;
+  flex-shrink: 0;
+}
+
+.toggleOn { background: var(--color-accent); }
+
+.toggleThumb {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,.3);
+  transition: transform .2s;
+  pointer-events: none;
+}
+
+.toggleOn .toggleThumb { transform: translateX(16px); }
+
+/* ── Time inputs ── */
+.timeInputs {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.timeInput {
+  padding: 6px 10px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  font-weight: 600;
+  width: 90px;
+  transition: border-color .15s;
+  cursor: pointer;
+}
+
+.timeInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(108,92,231,.12);
+}
+
+.timeSep {
+  color: var(--color-muted);
+  font-weight: 600;
+  font-size: 14px;
+}
+
+.closedLabel {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-muted);
+  padding: 6px 12px;
+  background: rgba(255,255,255,.04);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  display: inline-block;
+}
+
+/* ── Apply all ── */
+.applyAllBtn {
+  background: none;
+  border: 1px dashed var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-muted);
+  font-size: 12px;
+  font-weight: 500;
+  font-family: inherit;
+  padding: 8px 14px;
+  cursor: pointer;
+  transition: color .15s, border-color .15s;
+  margin-bottom: 12px;
+}
+
+.applyAllBtn:hover {
+  color: var(--color-text);
+  border-color: var(--color-border-h);
+}
+
+/* ── Save row ── */
+.saveRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-bottom: 28px;
+  flex-wrap: wrap;
+}
+
+.saveBtn {
+  padding: 9px 20px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+
+.saveBtn:hover:not(:disabled) {
+  background: var(--color-accent-h);
+  transform: translateY(-1px);
+}
+
+.saveBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+.errorMsg   { font-size: 12px; color: var(--color-danger); }
+.successMsg { font-size: 12px; color: var(--color-success); font-weight: 600; }
+
+/* ── Closures section ── */
+.closuresSection {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 18px 20px;
+}
+
+.closuresTitle {
+  font-size: 13px;
+  font-weight: 700;
+  margin-bottom: 4px;
+}
+
+.closuresDesc {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+
+.closuresList {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 14px;
+}
+
+.closureItem {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  padding: 9px 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+}
+
+.closureInfo {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  min-width: 0;
+}
+
+.closureDate {
+  font-size: 13px;
+  font-weight: 600;
+  white-space: nowrap;
+}
+
+.closureReason {
+  font-size: 12px;
+  color: var(--color-muted);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.closureDeleteBtn {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 13px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  transition: color .15s, background .15s;
+  flex-shrink: 0;
+}
+
+.closureDeleteBtn:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}
+
+.closureAddRow {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.closureDateInput,
+.closureReasonInput {
+  padding: 8px 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color .15s;
+}
+
+.closureDateInput:focus,
+.closureReasonInput:focus {
+  outline: none;
+  border-color: var(--color-accent);
+}
+
+.closureDateInput   { width: 160px; }
+.closureReasonInput { flex: 1; min-width: 120px; }
+
+.closureAddBtn {
+  padding: 8px 16px;
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text-2);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background .15s, border-color .15s;
+}
+
+.closureAddBtn:hover:not(:disabled) {
+  background: var(--color-surface-2);
+  border-color: var(--color-border-h);
+}
+
+.closureAddBtn:disabled { opacity: .4; cursor: not-allowed; }
+
+@media (max-width: 540px) {
+  .dayRow { grid-template-columns: 40px 90px 1fr; gap: 8px; padding: 10px 12px; }
+  .timeInput { width: 76px; }
+}

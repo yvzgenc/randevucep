@@ -26,7 +26,7 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const [todayQ, subQ] = await Promise.all([
+  const [todayQ, subQ, pendingQ] = await Promise.all([
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
@@ -37,9 +37,16 @@ export default async function DashboardPage() {
       .select('*')
       .eq('business_id', business.id)
       .maybeSingle(),
+    supabase
+      .from('appointments')
+      .select('id', { count: 'exact', head: true })
+      .eq('business_id', business.id)
+      .eq('status', 'Bekliyor')
+      .gte('appointment_date', today),
   ])
 
   const todayCount   = todayQ.count ?? 0
+  const pendingCount = pendingQ.count ?? 0
   const subscription = subQ.data ?? null
 
   const planConfig  = getPlanConfig(subscription?.plan_name)
@@ -86,11 +93,26 @@ export default async function DashboardPage() {
         </div>
       )}
 
+      {/* ── Bekleyen onay uyarısı ── */}
+      {pendingCount > 0 && (
+        <a href="/appointments" className={styles.pendingBanner}>
+          <span className={styles.pendingBannerDot} />
+          <span>
+            <strong>{pendingCount} randevu</strong> onayınızı bekliyor
+          </span>
+          <span className={styles.pendingBannerArrow}>Onaylara git →</span>
+        </a>
+      )}
+
       {/* ── Quick stat row ── */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Bugünkü Randevular</p>
           <p className={styles.statValue}>{todayCount}</p>
+        </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Onay Bekleyen</p>
+          <p className={pendingCount > 0 ? styles.statValueWarning : styles.statValue}>{pendingCount}</p>
         </div>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Aktif Plan</p>

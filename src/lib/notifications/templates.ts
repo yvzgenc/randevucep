@@ -63,13 +63,25 @@ function bookingCreatedCustomer(d: NotificationData): RenderedEmail {
     ['Tarih',    d.appointmentDate],
     ['Saat',     d.appointmentTime],
   ])
+
+  const manageBlock = d.manageUrl
+    ? `<div style="margin:20px 0;text-align:center;">
+        <a href="${d.manageUrl}" style="display:inline-block;padding:12px 28px;background:#4f3ef5;color:#fff;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px;">
+          📅 Randevumu Yönet
+        </a>
+        <p style="font-size:12px;color:#999;margin-top:10px;">İptal etmek veya tarih/saat değiştirmek için bu butonu kullanabilirsiniz.</p>
+      </div>`
+    : '<p>İptal etmek isterseniz lütfen işletmeyi arayın.</p>'
+
   const body = `
     <h1 class="title">Randevunuz alındı ✓</h1>
     <p>Merhaba ${d.customerName}, randevunuz başarıyla oluşturuldu.</p>
     ${rows}
-    <p>Randevunuz onaylandığında size bilgi vereceğiz. İptal etmek isterseniz lütfen işletmeyi arayın.</p>
+    ${manageBlock}
+    <p>Randevunuz onaylandığında size bilgi vereceğiz.</p>
   `
-  const text = `Randevunuz alındı!\n\nİşletme: ${d.businessName}\nHizmet: ${d.serviceName}\nPersonel: ${d.staffName}\nTarih: ${d.appointmentDate} ${d.appointmentTime}\n\nİptal için işletmeyi arayın.`
+  const manageText = d.manageUrl ? `\n\nRandevunuzu yönetmek için: ${d.manageUrl}` : '\n\nİptal için işletmeyi arayın.'
+  const text = `Randevunuz alındı!\n\nİşletme: ${d.businessName}\nHizmet: ${d.serviceName}\nPersonel: ${d.staffName}\nTarih: ${d.appointmentDate} ${d.appointmentTime}${manageText}`
   return { subject, html: layout(subject, body), text }
 }
 
@@ -139,13 +151,25 @@ function upcomingReminder(d: NotificationData): RenderedEmail {
     ['Tarih',    d.appointmentDate],
     ['Saat',     d.appointmentTime],
   ])
+
+  const manageBlock = d.manageUrl
+    ? `<div style="margin:20px 0;text-align:center;">
+        <a href="${d.manageUrl}" style="display:inline-block;padding:12px 28px;background:#4f3ef5;color:#fff;border-radius:8px;font-weight:700;text-decoration:none;font-size:14px;">
+          📅 Randevumu Yönet / İptal Et
+        </a>
+      </div>`
+    : `<p>İptal etmek isterseniz lütfen işletmeyi öncesinde arayın.</p>`
+
   const body = `
-    <h1 class="title">Randevunuzu hatırlatmak istedik</h1>
+    <h1 class="title">Randevunuzu hatırlatmak istedik ⏰</h1>
     <p>Merhaba ${d.customerName}, yarınki randevunuz için hatırlatma!</p>
     ${rows}
-    <p>İptal etmek isterseniz lütfen işletmeyi öncesinde arayın.</p>
+    ${manageBlock}
   `
-  const text = `Randevu hatırlatması!\n\nİşletme: ${d.businessName}\nHizmet: ${d.serviceName}\nTarih: ${d.appointmentDate} ${d.appointmentTime}`
+  const manageText = d.manageUrl
+    ? `\n\nRandevunuzu yönetmek veya iptal etmek için: ${d.manageUrl}`
+    : '\n\nİptal için işletmeyi öncesinde arayın.'
+  const text = `Randevu hatırlatması!\n\nİşletme: ${d.businessName}\nHizmet: ${d.serviceName}\nTarih: ${d.appointmentDate} ${d.appointmentTime}${manageText}`
   return { subject, html: layout(subject, body), text }
 }
 

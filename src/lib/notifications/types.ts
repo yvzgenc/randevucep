@@ -49,6 +49,8 @@ export interface NotificationData {
 
   // Booking URL for customer self-service (future)
   bookingUrl?:     string
+  // Self-service manage URL (cancel / reschedule)
+  manageUrl?:      string
 }
 
 // ── Provider interface ────────────────────────────────────────────────────────

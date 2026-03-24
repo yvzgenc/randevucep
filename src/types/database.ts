@@ -14,6 +14,7 @@ export type Database = {
           appointment_date:  string
           appointment_time:  string
           business_id:       number | null
+          cancel_token:      string
           created_at:        string | null
           customer_email:    string | null
           customer_name:     string
@@ -34,6 +35,7 @@ export type Database = {
           appointment_date:   string
           appointment_time:   string
           business_id?:       number | null
+          cancel_token?:      string
           created_at?:        string | null
           customer_email?:    string | null
           customer_name:      string
@@ -54,6 +56,7 @@ export type Database = {
           appointment_date?:   string
           appointment_time?:   string
           business_id?:        number | null
+          cancel_token?:       string
           created_at?:         string | null
           customer_email?:     string | null
           customer_name?:      string
@@ -93,6 +96,54 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      business_closures: {
+        Row: {
+          id:          number
+          business_id: number
+          closed_date: string   // YYYY-MM-DD
+          reason:      string | null
+        }
+        Insert: {
+          id?:         number
+          business_id: number
+          closed_date: string
+          reason?:     string | null
+        }
+        Update: {
+          id?:         number
+          business_id?: number
+          closed_date?: string
+          reason?:      string | null
+        }
+        Relationships: []
+      }
+      business_hours: {
+        Row: {
+          id:           number
+          business_id:  number
+          dow:          number   // 0=Sun…6=Sat
+          is_open:      boolean
+          opening_time: string | null
+          closing_time: string | null
+        }
+        Insert: {
+          id?:          number
+          business_id:  number
+          dow:          number
+          is_open?:     boolean
+          opening_time?: string | null
+          closing_time?: string | null
+        }
+        Update: {
+          id?:          number
+          business_id?: number
+          dow?:         number
+          is_open?:     boolean
+          opening_time?: string | null
+          closing_time?: string | null
+        }
+        Relationships: []
       }
       business_settings: {
         Row: {
@@ -317,6 +368,30 @@ export type Database = {
             referencedColumns: ["id"]
           },
         ]
+      }
+      staff_working_days: {
+        Row: {
+          id:          number
+          staff_id:    number
+          business_id: number
+          dow:         number   // 0=Sun…6=Sat
+          is_working:  boolean
+        }
+        Insert: {
+          id?:         number
+          staff_id:    number
+          business_id: number
+          dow:         number
+          is_working?: boolean
+        }
+        Update: {
+          id?:         number
+          staff_id?:   number
+          business_id?: number
+          dow?:        number
+          is_working?: boolean
+        }
+        Relationships: []
       }
       staff: {
         Row: {
@@ -578,6 +653,15 @@ export type Database = {
           error?:          string
         }
       }
+      manage_appointment_by_token: {
+        Args: {
+          p_token:    string
+          p_action:   string
+          p_new_date?: string | null
+          p_new_time?: string | null
+        }
+        Returns: Json
+      }
     }
     Enums: {
       [_ in never]: never
@@ -606,7 +690,10 @@ export type TablesUpdate<T extends keyof PublicSchema["Tables"]> =
 export type Business         = Tables<"businesses">
 export type Appointment      = Tables<"appointments">
 export type Service          = Tables<"services">
-export type StaffMember      = Tables<"staff">
+export type StaffMember        = Tables<"staff">
+export type BusinessHour       = Tables<"business_hours">
+export type BusinessClosure    = Tables<"business_closures">
+export type StaffWorkingDay    = Tables<"staff_working_days">
 export type Customer         = Tables<"customers">
 export type Subscription     = Tables<"subscriptions">
 export type BusinessSettings = Tables<"business_settings">

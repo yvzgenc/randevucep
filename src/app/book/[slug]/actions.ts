@@ -95,6 +95,17 @@ export async function bookAppointment(
       const smsEnabled      = settings?.sms_notifications_enabled      ?? false
       const whatsappEnabled = settings?.whatsapp_notifications_enabled ?? false
 
+      // Fetch cancel_token so we can include manage link in email
+      const tokenQ = await supabase
+        .from('appointments')
+        .select('cancel_token')
+        .eq('id', appointmentId)
+        .maybeSingle()
+
+      const cancelToken = tokenQ.data?.cancel_token
+      const baseUrl     = process.env.NEXT_PUBLIC_APP_URL ?? ''
+      const manageUrl   = cancelToken ? `${baseUrl}/manage/${cancelToken}` : undefined
+
       void notifyBookingCreatedMulti({
         customerEmail: args.customerEmail,
         customerName:  args.customerName,
@@ -110,8 +121,8 @@ export async function bookAppointment(
           appointmentDate,
           appointmentTime: args.time,
           appointmentId,
+          manageUrl,
         },
-        // Only pass smsConfig if at least one channel is enabled
         sms: (smsEnabled || whatsappEnabled) ? {
           smsEnabled,
           whatsappEnabled,

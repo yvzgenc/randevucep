@@ -1,7 +1,8 @@
-import type { Metadata }         from 'next'
-import { redirect }              from 'next/navigation'
+import type { Metadata }              from 'next'
+import Link                           from 'next/link'
+import { redirect }                   from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { Customer }         from '@/types/database'
+import type { Customer }              from '@/types/database'
 import styles from './customers.module.css'
 
 export const metadata: Metadata = { title: 'Müşteriler' }
@@ -24,7 +25,7 @@ export default async function CustomersPage() {
     .from('customers')
     .select('*')
     .eq('business_id', business.id)
-    .order('full_name')
+    .order('last_visit_at', { ascending: false, nullsFirst: false })
 
   const list: Customer[] = custQuery.data ?? []
 
@@ -56,8 +57,17 @@ export default async function CustomersPage() {
             <span>Son Ziyaret</span>
           </div>
           {list.map((c) => (
-            <div key={c.id} className={styles.tableRow}>
-              <span className={styles.primary}>{c.full_name}</span>
+            <Link
+              key={c.id}
+              href={`/customers/${c.id}`}
+              className={styles.tableRowLink}
+            >
+              <span className={styles.primaryWithNote}>
+                <span className={styles.primary}>{c.full_name}</span>
+                {c.notes && (
+                  <span className={styles.noteIndicator} title={c.notes}>📝</span>
+                )}
+              </span>
               <span className={styles.muted}>{c.phone}</span>
               <span className={styles.muted}>{c.email ?? '—'}</span>
               <span>
@@ -74,7 +84,7 @@ export default async function CustomersPage() {
                     })
                   : '—'}
               </span>
-            </div>
+            </Link>
           ))}
         </div>
       )}

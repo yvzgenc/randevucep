@@ -109,3 +109,44 @@
   color: var(--color-success);
   border: 1px solid rgba(16, 185, 129, 0.2);
 }
+
+/* ── Clickable row (Link) ── */
+.tableRowLink {
+  display: grid;
+  grid-template-columns: 1.5fr 1fr 1.5fr 80px 120px;
+  gap: 12px;
+  padding: 14px 20px;
+  border-bottom: 1px solid var(--color-border);
+  font-size: 13px;
+  align-items: center;
+  text-decoration: none;
+  color: var(--color-text);
+  transition: background .12s;
+  cursor: pointer;
+}
+
+.tableRowLink:last-child { border-bottom: none; }
+.tableRowLink:hover      { background: rgba(255,255,255,0.03); }
+
+/* ── Name + note indicator ── */
+.primaryWithNote {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.noteIndicator {
+  font-size: 12px;
+  opacity: 0.6;
+  flex-shrink: 0;
+}
+
+@media (max-width: 640px) {
+  .tableRowLink {
+    grid-template-columns: 1.5fr 1fr 80px;
+  }
+  .tableRowLink > *:nth-child(3),
+  .tableRowLink > *:nth-child(5) {
+    display: none;
+  }
+}

@@ -17,9 +17,11 @@ interface BusinessInfo {
 
 interface ReminderRow {
   id:               number
+  business_id:      number | null
   customer_name:    string
   customer_email:   string | null
   customer_phone:   string
+  cancel_token:     string
   service_name:     string
   staff_name:       string
   appointment_date: string
@@ -75,6 +77,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       customer_name,
       customer_email,
       customer_phone,
+      cancel_token,
       service_name,
       staff_name,
       appointment_date,
@@ -151,6 +154,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
 
+    const baseUrl   = process.env.NEXT_PUBLIC_APP_URL ?? ''
+    const manageUrl = appt.cancel_token ? `${baseUrl}/manage/${appt.cancel_token}` : undefined
+
     const result = await notifyUpcomingReminderMulti({
       customerEmail: email,
       customerName:  appt.customer_name,
@@ -165,6 +171,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         appointmentDate,
         appointmentTime: appt.appointment_time,
         appointmentId:   appt.id,
+        manageUrl,
       },
       sms: smsConfig,
     })

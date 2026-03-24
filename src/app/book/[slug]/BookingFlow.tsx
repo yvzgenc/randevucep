@@ -1,6 +1,6 @@
 'use client'
 import React, { useState, useMemo } from 'react'
-import type { Service, StaffMember, Business, Appointment } from '@/types/database'
+import type { Service, StaffMember, Business, Appointment, BusinessHour, StaffWorkingDay } from '@/types/database'
 import { Button } from '@/components/ui/Button'
 import { Input }  from '@/components/ui/Input'
 import { bookAppointment } from './actions'
@@ -14,13 +14,17 @@ type BusySlot = Pick<
 >
 
 interface Props {
-  business:    Business
-  services:    Service[]
-  staff:       StaffMember[]
-  busySlots:   BusySlot[]
-  openingTime: string
-  closingTime: string
-  slotMinutes: number
+  business:         Business
+  services:         Service[]
+  staff:            StaffMember[]
+  busySlots:        BusySlot[]
+  openingTime:      string
+  closingTime:      string
+  slotMinutes:      number
+  // New: working hours & availability
+  businessHours:    BusinessHour[]      // per-DOW overrides; empty = use openingTime/closingTime
+  closedDates:      string[]            // ISO dates that are fully closed
+  staffWorkingDays: StaffWorkingDay[]   // per-staff DOW overrides
 }
 
 type Step = 'service' | 'staff' | 'datetime' | 'contact' | 'done'
@@ -92,6 +96,51 @@ function formatDate(dateStr: string): string {
   })
 }
 
+/** JS getDay() returns 0=Sun…6=Sat — matches our DB dow convention */
+function getDow(isoDate: string): number {
+  return new Date(isoDate + 'T00:00:00').getDay()
+}
+
+/**
+ * Get effective opening/closing time for a given date.
+ * business_hours rows override the global settings.opening_time/closing_time.
+ * Returns null if business is closed that day.
+ */
+function getHoursForDate(
+  date:         string,
+  hours:        BusinessHour[],
+  globalOpen:   string,
+  globalClose:  string,
+): { opening: string; closing: string } | null {
+  const dow = getDow(date)
+  const row = hours.find((h) => h.dow === dow)
+  if (row) {
+    if (!row.is_open) return null
+    return {
+      opening: row.opening_time ?? globalOpen,
+      closing: row.closing_time ?? globalClose,
+    }
+  }
+  // No row = use global (assumed open)
+  return { opening: globalOpen, closing: globalClose }
+}
+
+/**
+ * Returns true if staff works on the given date's day-of-week.
+ * If no staff_working_days rows exist for this staff, assume they work every day.
+ */
+function staffWorksOnDate(
+  staffId:  number,
+  date:     string,
+  staffWd:  StaffWorkingDay[],
+): boolean {
+  const dow  = getDow(date)
+  const rows = staffWd.filter((r) => r.staff_id === staffId)
+  if (rows.length === 0) return true  // no override = always works
+  const row = rows.find((r) => r.dow === dow)
+  return row ? row.is_working : true
+}
+
 // ─── Step bar ─────────────────────────────────────────────────────────────────
 
 const STEP_META: { key: Step; label: string }[] = [
@@ -145,18 +194,35 @@ const EMPTY_BOOKING: BookingState = {
 export function BookingFlow({
   business, services, staff, busySlots,
   openingTime, closingTime, slotMinutes,
+  businessHours, closedDates, staffWorkingDays,
 }: Props) {
   const [step,        setStep]        = useState<Step>('service')
   const [booking,     setBooking]     = useState<BookingState>(EMPTY_BOOKING)
   const [submitting,  setSubmitting]  = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
-  const allSlots = useMemo(
-    () => booking.service
-      ? generateSlots(openingTime, closingTime, slotMinutes, booking.service.duration_minutes)
-      : [],
-    [booking.service, openingTime, closingTime, slotMinutes],
-  )
+  // Dates that are open for the selected staff
+  const dates = useMemo(() => {
+    const all = upcomingDates(30)
+    return all.filter((d) => {
+      // 1. Fully closed by special closure
+      if (closedDates.includes(d)) return false
+      // 2. Check business_hours for this DOW
+      const hrs = getHoursForDate(d, businessHours, openingTime, closingTime)
+      if (!hrs) return false
+      // 3. If staff selected, check staff working days
+      if (booking.staff && !staffWorksOnDate(booking.staff.id, d, staffWorkingDays)) return false
+      return true
+    })
+  }, [closedDates, businessHours, openingTime, closingTime, booking.staff, staffWorkingDays])
+
+  // Slots for selected date — use per-day hours if available
+  const allSlots = useMemo(() => {
+    if (!booking.service || !booking.date) return []
+    const hrs = getHoursForDate(booking.date, businessHours, openingTime, closingTime)
+    if (!hrs) return []
+    return generateSlots(hrs.opening, hrs.closing, slotMinutes, booking.service.duration_minutes)
+  }, [booking.service, booking.date, businessHours, openingTime, closingTime, slotMinutes])
 
   const slotsForDate = useMemo(() => {
     if (!booking.date || !booking.staff || !booking.service) return []
@@ -164,8 +230,6 @@ export function BookingFlow({
       (t) => !overlaps(busySlots, booking.date, t, booking.staff!.id, booking.service!.duration_minutes),
     )
   }, [allSlots, booking.date, booking.staff, booking.service, busySlots])
-
-  const dates = useMemo(() => upcomingDates(30), [])
 
   function handleCancel() {
     setStep('service')

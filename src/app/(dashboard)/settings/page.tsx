@@ -13,55 +13,93 @@ import styles        from './settings.module.css'
 import { UpgradeButton }   from './UpgradeButton'
 import { BillingSection }  from './BillingSection'
 import { SmsSettings }     from './SmsSettings'
-
+import { QrShareCard }     from './QrShareCard'
+import { WorkingHours }    from './WorkingHours'
+ 
 export const metadata: Metadata = { title: 'Ayarlar' }
-
+ 
 export default async function SettingsPage() {
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
-
+ 
   const bizQuery = await supabase
     .from('businesses')
     .select('*')
     .eq('owner_id', user.id)
     .maybeSingle()
-
+ 
   if (!bizQuery.data) redirect('/onboarding')
   const business = bizQuery.data
-
+ 
   const subQuery = await supabase
     .from('subscriptions')
     .select('*')
     .eq('business_id', business.id)
     .maybeSingle()
-
+ 
   // Fetch business_settings for SMS toggles
   const settingsQuery = await supabase
     .from('business_settings')
-    .select('sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled')
+    .select('opening_time, closing_time, slot_minutes, sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled')
     .eq('business_id', business.id)
     .maybeSingle()
-
+ 
   const smsRow = settingsQuery.data
-
+ 
+  // Fetch working hours + closures
+  const [hoursQuery, closuresQuery] = await Promise.all([
+    supabase
+      .from('business_hours')
+      .select('*')
+      .eq('business_id', business.id)
+      .order('dow'),
+    supabase
+      .from('business_closures')
+      .select('*')
+      .eq('business_id', business.id)
+      .gte('closed_date', new Date().toISOString().split('T')[0])
+      .order('closed_date'),
+  ])
+ 
   // Check if Twilio is configured (server-side only — never expose keys to client)
   const twilioConfigured = Boolean(
     process.env.TWILIO_ACCOUNT_SID &&
     process.env.TWILIO_AUTH_TOKEN  &&
     process.env.TWILIO_FROM_PHONE
   )
-
+ 
   const subscription = subQuery.data ?? null
   const currentPlan  = toPlanName(subscription?.plan_name)
   const planConfig   = getPlanConfig(currentPlan)
   const trialDays    = trialDaysRemaining(subscription?.trial_ends_at ?? null)
   const inTrial      = isInTrial(subscription?.trial_ends_at ?? null)
-
+ 
+  const appUrl    = process.env.NEXT_PUBLIC_APP_URL ?? ''
+  const bookingUrl = `${appUrl}/book/${business.slug}`
+ 
   return (
     <div>
       <h1 className={styles.title}>Ayarlar &amp; Plan</h1>
-
+ 
+      {/* ── Çalışma saatleri ── */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Çalışma Saatleri</h2>
+        <WorkingHours
+          businessId={business.id}
+          initialHours={hoursQuery.data ?? []}
+          initialClosures={closuresQuery.data ?? []}
+          defaultOpen={settingsQuery.data?.opening_time ?? '09:00'}
+          defaultClose={settingsQuery.data?.closing_time ?? '18:00'}
+        />
+      </section>
+ 
+      {/* ── QR & Rezervasyon Linki ── */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>Rezervasyon Linki &amp; QR Kod</h2>
+        <QrShareCard bookingUrl={bookingUrl} bizName={business.name} />
+      </section>
+ 
       {/* ── Billing & Subscription ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Abonelik &amp; Faturalama</h2>
@@ -71,7 +109,7 @@ export default async function SettingsPage() {
           planName={currentPlan}
         />
       </section>
-
+ 
       {/* ── SMS & WhatsApp notifications ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>SMS &amp; WhatsApp Bildirimleri</h2>
@@ -83,7 +121,7 @@ export default async function SettingsPage() {
           twilioConfigured={twilioConfigured}
         />
       </section>
-
+ 
       {/* ── Current plan card ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Mevcut Plan</h2>
@@ -115,7 +153,7 @@ export default async function SettingsPage() {
           </div>
         </div>
       </section>
-
+ 
       {/* ── Plan comparison / upgrade ── */}
       <section className={styles.section}>
         <h2 className={styles.sectionTitle}>Planlar</h2>
