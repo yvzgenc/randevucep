@@ -26,40 +26,44 @@
 
 .formTitle {
   font-size: 15px;
-  font-weight: 600;
+  font-weight: 700;
   margin-bottom: 20px;
   color: var(--color-text);
+  padding-bottom: 14px;
+  border-bottom: 1px solid var(--color-border);
 }
 
-.form { display: flex; flex-direction: column; gap: 16px; }
-
-.row2 { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
+.form    { display: flex; flex-direction: column; gap: 16px; }
+.row2    { display: grid; grid-template-columns: 1fr 1fr; gap: 16px; }
 
 .fieldGroup { display: flex; flex-direction: column; gap: 8px; }
 
 .fieldLabel {
-  font-size: 12px;
-  font-weight: 600;
-  letter-spacing: 0.3px;
-  color: var(--color-muted);
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.5px;
   text-transform: uppercase;
+  color: var(--color-muted);
 }
 
-.radioGroup { display: flex; gap: 20px; }
+.radioGroup { display: flex; gap: 20px; flex-wrap: wrap; }
 
 .radioLabel {
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 7px;
   font-size: 14px;
   cursor: pointer;
+  color: var(--color-text-2);
 }
 
 .formActions {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
-  padding-top: 4px;
+  padding-top: 8px;
+  border-top: 1px solid var(--color-border);
+  margin-top: 4px;
 }
 
 .errorMsg {
@@ -76,14 +80,15 @@
   background: var(--color-surface);
   border: 1px dashed var(--color-border);
   border-radius: var(--radius-lg);
-  padding: 56px 32px;
+  padding: 64px 32px;
   text-align: center;
 }
 
 .emptyIcon {
-  font-size: 32px;
-  margin-bottom: 14px;
-  opacity: 0.5;
+  font-size: 36px;
+  margin-bottom: 16px;
+  opacity: 0.4;
+  user-select: none;
 }
 
 .emptyTitle {
@@ -112,7 +117,7 @@
 
 .tableHeader {
   display: grid;
-  grid-template-columns: var(--cols, 1fr 1fr 1fr 80px 120px);
+  grid-template-columns: var(--cols, 2fr 80px 100px 80px 120px);
   gap: 12px;
   padding: 11px 20px;
   background: var(--color-surface-2);
@@ -126,7 +131,7 @@
 
 .tableRow {
   display: grid;
-  grid-template-columns: var(--cols, 1fr 1fr 1fr 80px 120px);
+  grid-template-columns: var(--cols, 2fr 80px 100px 80px 120px);
   gap: 12px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--color-border);
@@ -147,7 +152,7 @@
 .badgeActive {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: 11px; font-weight: 700;
   background: var(--color-success-bg);
   color: var(--color-success);
   border: 1px solid rgba(16, 185, 129, 0.25);
@@ -156,7 +161,7 @@
 .badgePassive {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: 11px; font-weight: 700;
   background: rgba(107, 114, 128, 0.1);
   color: var(--color-muted);
   border: 1px solid rgba(107, 114, 128, 0.2);
@@ -165,7 +170,7 @@
 .badgePending {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: 11px; font-weight: 700;
   background: var(--color-warning-bg);
   color: var(--color-warning);
   border: 1px solid rgba(245, 158, 11, 0.25);
@@ -174,7 +179,7 @@
 .badgeDone {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: 11px; font-weight: 700;
   background: var(--color-success-bg);
   color: var(--color-success);
   border: 1px solid rgba(16, 185, 129, 0.25);
@@ -183,7 +188,7 @@
 .badgeCancelled {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: 11px; font-weight: 700;
   background: var(--color-danger-bg);
   color: var(--color-danger);
   border: 1px solid rgba(239, 68, 68, 0.2);
@@ -210,17 +215,18 @@
   margin-bottom: 20px;
   font-size: 13px;
   flex-wrap: wrap;
+  color: var(--color-text-2);
 }
 
 .limitUpgradeLink {
   font-size: 12px;
-  font-weight: 600;
+  font-weight: 700;
   color: var(--color-accent-2);
   white-space: nowrap;
   flex-shrink: 0;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
-
-.limitUpgradeLink:hover { text-decoration: underline; }
 
 @media (max-width: 640px) {
   .row2 { grid-template-columns: 1fr; }
@@ -230,10 +236,10 @@
     grid-template-columns: 1fr 80px 100px;
   }
 
-  .tableHeader span:nth-child(2),
-  .tableHeader span:nth-child(3),
-  .tableRow span:nth-child(2),
-  .tableRow span:nth-child(3) {
+  .tableHeader span:nth-child(4),
+  .tableHeader span:nth-child(5),
+  .tableRow span:nth-child(4),
+  .tableRow span:nth-child(5) {
     display: none;
   }
 }

@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
+import type { Metadata }         from 'next'
+import { redirect }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { Customer } from '@/types/database'
+import type { Customer }         from '@/types/database'
 import styles from './customers.module.css'
 
 export const metadata: Metadata = { title: 'Müşteriler' }
@@ -11,31 +11,36 @@ export default async function CustomersPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
+  const bizQuery = await supabase
     .from('businesses')
-    .select('*')
+    .select('id')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!business) redirect('/onboarding')
+  if (!bizQuery.data) redirect('/onboarding')
+  const business = bizQuery.data
 
-  const { data: customers } = await supabase
+  const custQuery = await supabase
     .from('customers')
     .select('*')
     .eq('business_id', business.id)
     .order('full_name')
 
-  const list: Customer[] = customers ?? []
+  const list: Customer[] = custQuery.data ?? []
 
   return (
     <div>
+      {/* ── Header ── */}
       <div className={styles.header}>
         <h1 className={styles.title}>Müşteriler</h1>
-        <span className={styles.count}>{list.length} müşteri</span>
+        {list.length > 0 && (
+          <span className={styles.count}>{list.length} müşteri</span>
+        )}
       </div>
 
       {list.length === 0 ? (
         <div className={styles.empty}>
+          <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.4 }}>👥</div>
           <p className={styles.emptyTitle}>Henüz müşteri yok</p>
           <p className={styles.emptyDesc}>
             Müşteriler, rezervasyon sayfanızdan randevu alındığında otomatik oluşturulur.
@@ -55,10 +60,18 @@ export default async function CustomersPage() {
               <span className={styles.primary}>{c.full_name}</span>
               <span className={styles.muted}>{c.phone}</span>
               <span className={styles.muted}>{c.email ?? '—'}</span>
-              <span className={styles.muted}>{c.visit_count ?? 0}</span>
+              <span>
+                <span className={
+                  (c.visit_count ?? 0) > 1 ? styles.visitBadgeRepeat : styles.muted
+                }>
+                  {c.visit_count ?? 0}
+                </span>
+              </span>
               <span className={styles.muted}>
                 {c.last_visit_at
-                  ? new Date(c.last_visit_at).toLocaleDateString('tr-TR')
+                  ? new Date(c.last_visit_at).toLocaleDateString('tr-TR', {
+                      day: 'numeric', month: 'short', year: 'numeric',
+                    })
                   : '—'}
               </span>
             </div>

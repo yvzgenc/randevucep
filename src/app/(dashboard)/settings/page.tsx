@@ -1,5 +1,5 @@
-import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
+import type { Metadata }         from 'next'
+import { redirect }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import {
   PLANS,
@@ -9,9 +9,9 @@ import {
   trialDaysRemaining,
   isInTrial,
 } from '@/lib/plans'
-import styles       from './settings.module.css'
-import { UpgradeButton }  from './UpgradeButton'
-import { BillingSection } from './BillingSection'
+import styles        from './settings.module.css'
+import { UpgradeButton }   from './UpgradeButton'
+import { BillingSection }  from './BillingSection'
 
 export const metadata: Metadata = { title: 'Ayarlar' }
 
@@ -20,27 +20,26 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: bizData } = await supabase
+  const bizQuery = await supabase
     .from('businesses')
     .select('*')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!bizData) redirect('/onboarding')
+  if (!bizQuery.data) redirect('/onboarding')
+  const business = bizQuery.data
 
-  // business.id is non-nullable in schema; safe to use directly
-  const business = bizData
-
-  const { data: subData } = await supabase
+  const subQuery = await supabase
     .from('subscriptions')
     .select('*')
     .eq('business_id', business.id)
     .maybeSingle()
 
-  const currentPlan  = toPlanName(subData?.plan_name)
+  const subscription = subQuery.data ?? null
+  const currentPlan  = toPlanName(subscription?.plan_name)
   const planConfig   = getPlanConfig(currentPlan)
-  const trialDays    = trialDaysRemaining(subData?.trial_ends_at ?? null)
-  const inTrial      = isInTrial(subData?.trial_ends_at ?? null)
+  const trialDays    = trialDaysRemaining(subscription?.trial_ends_at ?? null)
+  const inTrial      = isInTrial(subscription?.trial_ends_at ?? null)
 
   return (
     <div>
@@ -73,30 +72,17 @@ export default async function SettingsPage() {
           </div>
           <p className={styles.planDesc}>{planConfig.description}</p>
           <div className={styles.limitGrid}>
-            <div className={styles.limitItem}>
-              <span className={styles.limitLabel}>Personel</span>
-              <span className={styles.limitValue}>
-                {planConfig.max_staff === -1 ? 'Sınırsız' : planConfig.max_staff}
-              </span>
-            </div>
-            <div className={styles.limitItem}>
-              <span className={styles.limitLabel}>Hizmet</span>
-              <span className={styles.limitValue}>
-                {planConfig.max_services === -1 ? 'Sınırsız' : planConfig.max_services}
-              </span>
-            </div>
-            <div className={styles.limitItem}>
-              <span className={styles.limitLabel}>Aylık Randevu</span>
-              <span className={styles.limitValue}>
-                {planConfig.monthly_appointments === -1 ? 'Sınırsız' : planConfig.monthly_appointments}
-              </span>
-            </div>
-            <div className={styles.limitItem}>
-              <span className={styles.limitLabel}>Online Rezervasyon</span>
-              <span className={styles.limitValue}>
-                {planConfig.online_booking_enabled ? '✓ Açık' : '✗ Kapalı'}
-              </span>
-            </div>
+            {[
+              { label: 'Personel', value: planConfig.max_staff === -1 ? 'Sınırsız' : planConfig.max_staff },
+              { label: 'Hizmet', value: planConfig.max_services === -1 ? 'Sınırsız' : planConfig.max_services },
+              { label: 'Aylık Randevu', value: planConfig.monthly_appointments === -1 ? 'Sınırsız' : planConfig.monthly_appointments },
+              { label: 'Online Rezervasyon', value: planConfig.online_booking_enabled ? '✓ Açık' : '✗ Kapalı' },
+            ].map(({ label, value }) => (
+              <div key={label} className={styles.limitItem}>
+                <span className={styles.limitLabel}>{label}</span>
+                <span className={styles.limitValue}>{value}</span>
+              </div>
+            ))}
           </div>
         </div>
       </section>
@@ -128,12 +114,8 @@ export default async function SettingsPage() {
                 </div>
                 <p className={styles.planCardDesc}>{cfg.description}</p>
                 <ul className={styles.planFeatures}>
-                  <li>
-                    {cfg.max_staff === -1 ? 'Sınırsız' : cfg.max_staff} personel
-                  </li>
-                  <li>
-                    {cfg.max_services === -1 ? 'Sınırsız' : cfg.max_services} hizmet
-                  </li>
+                  <li>{cfg.max_staff === -1 ? 'Sınırsız' : cfg.max_staff} personel</li>
+                  <li>{cfg.max_services === -1 ? 'Sınırsız' : cfg.max_services} hizmet</li>
                   <li>
                     {cfg.monthly_appointments === -1
                       ? 'Sınırsız randevu'

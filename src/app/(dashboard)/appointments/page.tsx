@@ -1,8 +1,8 @@
-import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
+import type { Metadata }         from 'next'
+import { redirect }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import type { Appointment } from '@/types/database'
-import { AppointmentActions } from './AppointmentActions'
+import type { Appointment }      from '@/types/database'
+import { AppointmentActions }    from './AppointmentActions'
 import styles from './appointments.module.css'
 
 export const metadata: Metadata = { title: 'Randevular' }
@@ -22,15 +22,16 @@ export default async function AppointmentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
+  const bizQuery = await supabase
     .from('businesses')
-    .select('*')
+    .select('id')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!business) redirect('/onboarding')
+  if (!bizQuery.data) redirect('/onboarding')
+  const business = bizQuery.data
 
-  const { data: appointments } = await supabase
+  const apptQuery = await supabase
     .from('appointments')
     .select('*')
     .eq('business_id', business.id)
@@ -38,20 +39,26 @@ export default async function AppointmentsPage() {
     .order('appointment_time', { ascending: false })
     .limit(100)
 
-  const list: Appointment[] = appointments ?? []
+  const list: Appointment[] = apptQuery.data ?? []
 
   return (
     <div>
+      {/* ── Header ── */}
       <div className={styles.header}>
         <h1 className={styles.title}>Randevular</h1>
-        <span className={styles.count}>{list.length} randevu</span>
+        {list.length > 0 && (
+          <span className={styles.count}>{list.length} randevu</span>
+        )}
       </div>
 
       {list.length === 0 ? (
         <div className={styles.empty}>
+          <div style={{ fontSize: 36, marginBottom: 16, opacity: 0.4 }}>📅</div>
           <p className={styles.emptyTitle}>Henüz randevu yok</p>
           <p className={styles.emptyDesc}>
             Müşteriler rezervasyon sayfanızdan randevu aldığında burada görünecek.
+            <br />
+            Rezervasyon sayfanızı paylaşarak başlayın.
           </p>
         </div>
       ) : (
@@ -68,7 +75,9 @@ export default async function AppointmentsPage() {
             <div key={appt.id} className={styles.tableRow}>
               <span>
                 <span className={styles.date}>
-                  {new Date(appt.appointment_date).toLocaleDateString('tr-TR')}
+                  {new Date(appt.appointment_date).toLocaleDateString('tr-TR', {
+                    day: 'numeric', month: 'short',
+                  })}
                 </span>
                 <span className={styles.time}>{appt.appointment_time}</span>
               </span>

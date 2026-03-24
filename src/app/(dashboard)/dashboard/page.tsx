@@ -1,8 +1,8 @@
-import type { Metadata } from 'next'
-import { redirect }      from 'next/navigation'
+import type { Metadata }         from 'next'
+import { redirect }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { trialDaysRemaining, getPlanConfig } from '@/lib/plans'
-import { AnalyticsSection }  from './AnalyticsSection'
+import { AnalyticsSection }      from './AnalyticsSection'
 import styles from './dashboard.module.css'
 
 export const metadata: Metadata = { title: 'Genel Bakış' }
@@ -14,7 +14,7 @@ export default async function DashboardPage() {
   const user = authQuery.data.user
   if (!user) redirect('/login')
 
-  // Fetch business — new query-object pattern
+  // Fetch business — query-object pattern
   const bizQuery = await supabase
     .from('businesses')
     .select('*')
@@ -26,7 +26,6 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  // Parallel fetches: today count, subscription
   const [todayQ, subQ] = await Promise.all([
     supabase
       .from('appointments')
@@ -40,8 +39,7 @@ export default async function DashboardPage() {
       .maybeSingle(),
   ])
 
-  const todayCount  = todayQ.count ?? 0
-  // subQ.data is null when no subscription exists — safe to use with ?.
+  const todayCount   = todayQ.count ?? 0
   const subscription = subQ.data ?? null
 
   const planConfig  = getPlanConfig(subscription?.plan_name)
@@ -50,19 +48,25 @@ export default async function DashboardPage() {
 
   return (
     <div>
+      {/* ── Page header ── */}
       <div className={styles.header}>
-        <h1 className={styles.title}>Genel Bakış</h1>
+        <div>
+          <h1 className={styles.title}>Genel Bakış</h1>
+          <p className={styles.subtitle}>
+            Hoş geldiniz, <strong>{business.name}</strong>
+          </p>
+        </div>
         <a
           href={`/book/${business.slug}`}
           target="_blank"
           rel="noreferrer"
           className={styles.bookingBadge}
         >
-          🔗 Rezervasyon sayfanız aktif
+          🔗 Rezervasyon Sayfam
         </a>
       </div>
 
-      {/* Trial banner */}
+      {/* ── Trial banner ── */}
       {trialActive && (
         <div className={styles.trialBanner}>
           <span className={styles.trialText}>
@@ -74,17 +78,15 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* Expired trial warning */}
-      {trialDays === 0 && (
+      {/* ── Expired trial ── */}
+      {!trialActive && trialDays === 0 && (
         <div className={styles.trialExpired}>
-          <span>⚠️ Deneme süreniz doldu.</span>
-          <a href="/settings" className={styles.upgradeLink}>
-            Planı Seç →
-          </a>
+          <span>⚠️ Deneme süreniz doldu. Hizmetlerinizi korumak için bir plan seçin.</span>
+          <a href="/settings" className={styles.upgradeLink}>Planı Seç →</a>
         </div>
       )}
 
-      {/* Quick stat row (existing) */}
+      {/* ── Quick stat row ── */}
       <div className={styles.statsGrid}>
         <div className={styles.statCard}>
           <p className={styles.statLabel}>Bugünkü Randevular</p>
@@ -96,7 +98,7 @@ export default async function DashboardPage() {
         </div>
       </div>
 
-      {/* Analytics section */}
+      {/* ── Analytics section ── */}
       <AnalyticsSection supabase={supabase} businessId={business.id} />
     </div>
   )
