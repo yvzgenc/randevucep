@@ -1,137 +1,123 @@
 'use server'
 
-import { revalidatePath } from 'next/cache'
+import { revalidatePath }             from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { notifyStatusChange } from '@/lib/notifications'
+import { notifyStatusChange }         from '@/lib/notifications'
+import { requireNonNull }             from '@/lib/supabase/guards'
+import type { Database }              from '@/types/database'
 
 export type AppointmentStatus = 'Onaylı' | 'İptal' | 'Tamamlandı' | 'Gelmedi'
 
 const VALID_STATUSES: AppointmentStatus[] = ['Onaylı', 'İptal', 'Tamamlandı', 'Gelmedi']
 
 export interface UpdateStatusResult {
-  error: string | null
+  error:          string | null
   customerEmail?: string
 }
 
-type AppointmentForStatusUpdate = {
-  id: number
-  business_id: number | null
-  customer_name: string
-  customer_phone: string | null
-  customer_email: string | null
-  service_name: string | null
-  staff_name: string | null
-  appointment_date: string
-  appointment_time: string
-}
+// Full row type from database schema — used after select('*') to avoid
+// GenericStringError that occurs when Supabase SDK cannot parse a partial
+// select string into column types.
+type ApptRow = Database['public']['Tables']['appointments']['Row']
+type BizRow  = Pick<
+  Database['public']['Tables']['businesses']['Row'],
+  'id' | 'name' | 'slug' | 'phone'
+>
 
 export async function updateAppointmentStatus(
   appointmentId: number,
-  newStatus: AppointmentStatus,
-  manualEmail?: string,
+  newStatus:     AppointmentStatus,
+  manualEmail?:  string,
 ): Promise<UpdateStatusResult> {
   if (!VALID_STATUSES.includes(newStatus)) {
     return { error: 'Geçersiz durum.' }
   }
 
   const supabase = await createServerSupabaseClient()
-  const {
-    data: { user },
-  } = await supabase.auth.getUser()
+  const { data: { user } } = await supabase.auth.getUser()
+  if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
-  if (!user) {
-    return { error: 'Oturum açmanız gerekiyor.' }
-  }
-
-  const appointmentQuery = await supabase
+  // select('*') gives full typed row — no GenericStringError
+  const apptQuery = await supabase
     .from('appointments')
-    .select(
-      `
-        id,
-        business_id,
-        customer_name,
-        customer_phone,
-        customer_email,
-        service_name,
-        staff_name,
-        appointment_date,
-        appointment_time
-      `
-    )
+    .select('*')
     .eq('id', appointmentId)
     .single()
 
-  if (appointmentQuery.error || !appointmentQuery.data) {
+  if (apptQuery.error || !apptQuery.data) {
     return { error: 'Randevu bulunamadı.' }
   }
 
-  const appt = appointmentQuery.data as AppointmentForStatusUpdate
+  const appt: ApptRow = apptQuery.data
 
-  if (appt.business_id == null) {
+  // business_id is nullable in schema — explicit guard before .eq()
+  const businessId = appt.business_id
+  if (businessId == null) {
     return { error: 'Randevuya bağlı işletme bulunamadı.' }
   }
 
-  const businessQuery = await supabase
+  // Confirm ownership
+  const bizQuery = await supabase
     .from('businesses')
     .select('id, name, slug, phone')
-    .eq('id', appt.business_id)
+    .eq('id', businessId)
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (businessQuery.error || !businessQuery.data) {
+  if (bizQuery.error || !bizQuery.data) {
     return { error: 'Bu randevuyu güncelleme yetkiniz yok.' }
   }
 
-  const biz = businessQuery.data
+  const biz: BizRow = bizQuery.data
 
+  // Update status
   const updateQuery = await supabase
     .from('appointments')
     .update({ status: newStatus })
     .eq('id', appointmentId)
 
-  if (updateQuery.error) {
-    return { error: updateQuery.error.message }
-  }
+  if (updateQuery.error) return { error: updateQuery.error.message }
 
-  const resolvedEmail = (appt.customer_email?.trim() || manualEmail?.trim()) ?? ''
+  // Resolve email: DB value takes priority, manual input is fallback
+  const resolvedEmail = appt.customer_email?.trim() || manualEmail?.trim() || ''
 
+  // Send notification for actionable status changes
   if (
     resolvedEmail &&
     resolvedEmail.includes('@') &&
     (newStatus === 'Onaylı' || newStatus === 'İptal')
   ) {
     const appointmentDate = new Date(appt.appointment_date).toLocaleDateString('tr-TR', {
-      weekday: 'long',
-      year: 'numeric',
-      month: 'long',
-      day: 'numeric',
+      weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
 
-    const notifData = {
-      businessName: biz.name,
-      businessPhone: biz.phone ?? '',
-      businessSlug: biz.slug,
-      customerName: appt.customer_name,
-      customerPhone: appt.customer_phone ?? '',
-      serviceName: appt.service_name ?? '',
-      staffName: appt.staff_name ?? '',
-      appointmentDate,
-      appointmentTime: appt.appointment_time,
-      appointmentId: appt.id,
-    }
-
     void notifyStatusChange({
-      event: newStatus === 'Onaylı' ? 'booking_confirmed' : 'booking_canceled',
+      event:         newStatus === 'Onaylı' ? 'booking_confirmed' : 'booking_canceled',
       customerEmail: resolvedEmail,
-      customerName: appt.customer_name,
-      data: notifData,
+      customerName:  appt.customer_name,
+      data: {
+        businessName:    biz.name,
+        businessPhone:   biz.phone ?? undefined,
+        businessSlug:    biz.slug,
+        customerName:    appt.customer_name,
+        customerPhone:   appt.customer_phone,
+        serviceName:     appt.service_name,
+        staffName:       appt.staff_name,
+        appointmentDate,
+        appointmentTime: appt.appointment_time,
+        appointmentId:   appt.id,
+      },
     })
   } else if (newStatus === 'Onaylı' || newStatus === 'İptal') {
     console.info(
-      `[appointments/action] Status changed to "${newStatus}" for appointment ${appointmentId} but no customer email available — notification skipped.`
+      `[appointments/action] Status="${newStatus}" appt=${appointmentId}` +
+      ` — no customer email, notification skipped.`
     )
   }
 
   revalidatePath('/appointments')
   return { error: null, customerEmail: resolvedEmail || undefined }
 }
+
+// re-export so callers don't need a separate import
+export { requireNonNull }
