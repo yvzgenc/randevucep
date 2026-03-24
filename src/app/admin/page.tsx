@@ -4,53 +4,52 @@ import styles from './admin.module.css'
 
 export const metadata: Metadata = { title: 'Admin — Genel Bakış' }
 
+const STAT_ICONS = ['🏢', '🔬', '💳', '✕']
+
 export default async function AdminPage() {
   const supabase = await createServerSupabaseClient()
   const now = new Date().toISOString()
 
-  const [
-    { count: totalBusinesses },
-    { count: trialCount },
-    { count: paidActiveCount },
-    { count: canceledCount },
-  ] = await Promise.all([
-    // All onboarded businesses
+  const [totalQ, trialQ, paidQ, canceledQ] = await Promise.all([
     supabase
       .from('businesses')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('onboarding_completed', true),
-
-    // Trial: active status AND trial_ends_at is in the future
     supabase
       .from('subscriptions')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('status', 'active')
       .not('trial_ends_at', 'is', null)
       .gt('trial_ends_at', now),
-
-    // Paid active: active status AND (no trial_ends_at OR trial already expired)
     supabase
       .from('subscriptions')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('status', 'active')
       .or(`trial_ends_at.is.null,trial_ends_at.lte.${now}`),
-
-    // Canceled
     supabase
       .from('subscriptions')
-      .select('*', { count: 'exact', head: true })
+      .select('id', { count: 'exact', head: true })
       .eq('status', 'canceled'),
   ])
 
   const stats = [
-    { label: 'Toplam İşletme', value: totalBusinesses  ?? 0 },
-    { label: 'Trial',           value: trialCount       ?? 0 },
-    { label: 'Aktif Ücretli',  value: paidActiveCount  ?? 0 },
-    { label: 'İptal',           value: canceledCount    ?? 0 },
+    { label: 'Toplam İşletme', value: totalQ.count    ?? 0 },
+    { label: 'Trial',          value: trialQ.count     ?? 0 },
+    { label: 'Aktif Ücretli', value: paidQ.count      ?? 0 },
+    { label: 'İptal',          value: canceledQ.count  ?? 0 },
   ]
 
   return (
     <div>
+      {/* Welcome banner */}
+      <div className={styles.welcomeBanner}>
+        <div className={styles.welcomeBannerIcon}>👋</div>
+        <div>
+          <p className={styles.welcomeBannerTitle}>Admin Paneli</p>
+          <p className={styles.welcomeBannerDesc}>Platform genelindeki işletmeleri ve abonelikleri yönetin.</p>
+        </div>
+      </div>
+
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>Genel Bakış</h1>
@@ -59,8 +58,9 @@ export default async function AdminPage() {
       </div>
 
       <div className={styles.statsRow}>
-        {stats.map((s) => (
+        {stats.map((s, i) => (
           <div key={s.label} className={styles.statCard}>
+            <div className={styles.statIcon}>{STAT_ICONS[i]}</div>
             <p className={styles.statLabel}>{s.label}</p>
             <p className={styles.statValue}>{s.value}</p>
           </div>
@@ -69,8 +69,8 @@ export default async function AdminPage() {
 
       <div className={styles.tableWrap}>
         <div className={styles.empty}>
-          Detaylar için{' '}
-          <a href="/admin/businesses" style={{ color: 'var(--color-accent)' }}>
+          Detaylı işletme listesi için{' '}
+          <a href="/admin/businesses" style={{ color: 'var(--color-accent-2)', fontWeight: 600 }}>
             İşletmeler →
           </a>
         </div>

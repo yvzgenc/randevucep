@@ -1,8 +1,8 @@
-import type { Metadata } from 'next'
-import { notFound } from 'next/navigation'
+import type { Metadata }         from 'next'
+import { notFound }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { BookingFlow } from './BookingFlow'
-import { getPlanConfig } from '@/lib/plans'
+import { BookingFlow }           from './BookingFlow'
+import { getPlanConfig }         from '@/lib/plans'
 import type { Appointment, BusinessSettings } from '@/types/database'
 import styles from './booking.module.css'
 
@@ -14,15 +14,15 @@ export async function generateMetadata({ params }: Props): Promise<Metadata> {
   const { slug } = await params
   const supabase = await createServerSupabaseClient()
 
-  const { data: business } = await supabase
+  const bizQ = await supabase
     .from('businesses')
-    .select('*')
+    .select('name')
     .eq('slug', slug)
     .eq('is_active', true)
     .maybeSingle()
 
   return {
-    title: business ? `${business.name} — Randevu Al` : 'Randevu Al',
+    title: bizQ.data ? `${bizQ.data.name} — Randevu Al` : 'Randevu Al',
   }
 }
 
@@ -36,36 +36,43 @@ export default async function BookingPage({ params }: Props) {
   const { slug } = await params
   const supabase = await createServerSupabaseClient()
 
-  const { data: business } = await supabase
+  const bizQ = await supabase
     .from('businesses')
     .select('*')
     .eq('slug', slug)
     .eq('is_active', true)
     .maybeSingle()
 
-  if (!business) notFound()
+  if (!bizQ.data) notFound()
+  const business = bizQ.data
 
-  // Check online booking enabled for this plan
-  const { data: subscription } = await supabase
+  const subQ = await supabase
     .from('subscriptions')
     .select('plan_name')
     .eq('business_id', business.id)
     .maybeSingle()
 
-  const planConfig = getPlanConfig(subscription?.plan_name)
+  const planConfig = getPlanConfig(subQ.data?.plan_name)
 
+  // ── Closed state ──────────────────────────────────────────────────────────
   if (!planConfig.online_booking_enabled) {
     return (
       <div className={styles.page}>
         <header className={styles.header}>
-          <div className={styles.bizName}>{business.name}</div>
+          <div className={styles.bizBrand}>
+            <div className={styles.bizLogoMark}>📅</div>
+            <span className={styles.bizName}>{business.name}</span>
+          </div>
         </header>
         <main className={styles.main}>
           <div className={styles.closedBox}>
+            <div className={styles.closedIcon}>🔒</div>
             <p className={styles.closedTitle}>Online Rezervasyon Kapalı</p>
             <p className={styles.closedDesc}>
-              Bu işletme şu an online rezervasyona kapalı.
-              {business.phone ? ` Randevu için ${business.phone} numarasını arayabilirsiniz.` : ''}
+              Bu işletme şu an online rezervasyona kapalıdır.
+              {business.phone
+                ? ` Randevu için ${business.phone} numarasını arayabilirsiniz.`
+                : ''}
             </p>
           </div>
         </main>
@@ -77,16 +84,9 @@ export default async function BookingPage({ params }: Props) {
   }
 
   const today  = new Date().toISOString().split('T')[0]
-  const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000)
-    .toISOString()
-    .split('T')[0]
+  const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
-  const [
-    { data: services },
-    { data: staffList },
-    { data: busy },
-    { data: settingsRow },
-  ] = await Promise.all([
+  const [servicesQ, staffQ, busyQ, settingsQ] = await Promise.all([
     supabase
       .from('services')
       .select('*')
@@ -113,31 +113,44 @@ export default async function BookingPage({ params }: Props) {
       .maybeSingle(),
   ])
 
-  const settings = settingsRow ?? DEFAULT_SETTINGS
+  const settings = settingsQ.data ?? DEFAULT_SETTINGS
 
   type BusySlot = Pick<
     Appointment,
     'appointment_date' | 'appointment_time' | 'staff_id' | 'duration_minutes'
   >
-  const busySlots: BusySlot[] = busy ?? []
+  const busySlots: BusySlot[] = busyQ.data ?? []
+
+  const metaParts: string[] = []
+  if (business.city)  metaParts.push(`📍 ${business.city}`)
+  if (business.phone) metaParts.push(`📞 ${business.phone}`)
 
   return (
     <div className={styles.page}>
       <header className={styles.header}>
-        <div className={styles.bizName}>{business.name}</div>
-        {business.city ? (
-          <div className={styles.bizMeta}>📍 {business.city}</div>
-        ) : null}
-        {business.phone ? (
-          <div className={styles.bizMeta}>📞 {business.phone}</div>
-        ) : null}
+        <div className={styles.bizBrand}>
+          <div className={styles.bizLogoMark}>📅</div>
+          <div>
+            <div className={styles.bizName}>{business.name}</div>
+            {metaParts.length > 0 && (
+              <div className={styles.bizMeta}>
+                {metaParts.map((p, i) => (
+                  <span key={p}>
+                    {i > 0 && <span className={styles.bizMetaDot} />}
+                    {p}
+                  </span>
+                ))}
+              </div>
+            )}
+          </div>
+        </div>
       </header>
 
       <main className={styles.main}>
         <BookingFlow
           business={business}
-          services={services ?? []}
-          staff={staffList ?? []}
+          services={servicesQ.data ?? []}
+          staff={staffQ.data ?? []}
           busySlots={busySlots}
           openingTime={settings.opening_time}
           closingTime={settings.closing_time}
