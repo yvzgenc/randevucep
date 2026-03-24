@@ -163,3 +163,50 @@ export function renderTemplate(
     case 'upcoming_reminder':        return upcomingReminder(data)
   }
 }
+
+// ─── SMS / WhatsApp templates ─────────────────────────────────────────────────
+// Short, plain-text messages optimised for mobile screens.
+// Turkish character support: Twilio handles UTF-8 natively.
+// Keep under 160 chars when possible (1 SMS segment) — reminder is slightly longer.
+
+export interface RenderedSms {
+  body: string
+}
+
+export function renderSmsTemplate(
+  event: NotificationEvent,
+  data:  NotificationData,
+): RenderedSms {
+  const biz  = data.businessName
+  const svc  = data.serviceName
+  const date = data.appointmentDate
+  const time = data.appointmentTime
+  const cust = data.customerName
+
+  switch (event) {
+    case 'booking_created_customer':
+      return {
+        body: `📅 Randevunuz alındı!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal için: ${data.businessPhone ?? biz + "'i arayın"}`,
+      }
+
+    case 'booking_created_business':
+      return {
+        body: `🔔 Yeni randevu!\n\nMüşteri: ${cust} (${data.customerPhone ?? ''})\nHizmet: ${svc}\nTarih: ${date} ${time}`,
+      }
+
+    case 'booking_confirmed':
+      return {
+        body: `✅ Randevunuz onaylandı!\n\n${biz}\n${svc} – ${date} ${time}\n\nSizi bekliyoruz!`,
+      }
+
+    case 'booking_canceled':
+      return {
+        body: `❌ Randevunuz iptal edildi.\n\n${biz} – ${svc}\n${date} ${time}\n\nYeni randevu için: ${data.businessPhone ?? biz}`,
+      }
+
+    case 'upcoming_reminder':
+      return {
+        body: `⏰ Yarınki randevu hatırlatması!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal için lütfen öncesinden ${data.businessPhone ?? 'işletmeyi'} arayın.`,
+      }
+  }
+}

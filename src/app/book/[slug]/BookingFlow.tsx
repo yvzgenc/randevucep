@@ -92,7 +92,7 @@ function formatDate(dateStr: string): string {
   })
 }
 
-// ─── Step indicator ───────────────────────────────────────────────────────────
+// ─── Step bar ─────────────────────────────────────────────────────────────────
 
 const STEP_META: { key: Step; label: string }[] = [
   { key: 'service',  label: 'Hizmet'   },
@@ -118,6 +118,19 @@ function StepBar({ current }: { current: Step }) {
           <span className={styles.stepLabel}>{s.label}</span>
         </div>
       ))}
+    </div>
+  )
+}
+
+// ─── Cancel bar ──────────────────────────────────────────────────────────────
+// Shown at top of every wizard step so user can bail out anytime
+
+function CancelBar({ onCancel }: { onCancel: () => void }) {
+  return (
+    <div className={styles.cancelBar}>
+      <button className={styles.cancelBtn} onClick={onCancel} type="button">
+        ✕ Rezervasyonu İptal Et
+      </button>
     </div>
   )
 }
@@ -154,7 +167,13 @@ export function BookingFlow({
 
   const dates = useMemo(() => upcomingDates(30), [])
 
-  // ── Submit — calls server action (no client-side supabase or fetch) ────────
+  function handleCancel() {
+    setStep('service')
+    setBooking(EMPTY_BOOKING)
+    setSubmitError(null)
+  }
+
+  // ── Submit ────────────────────────────────────────────────────────────────
 
   async function handleSubmit(e: React.FormEvent) {
     e.preventDefault()
@@ -200,30 +219,51 @@ export function BookingFlow({
       <div className={styles.done}>
         <div className={styles.doneIcon}>✓</div>
         <h2 className={styles.doneTitle}>Randevunuz Alındı!</h2>
-        <div className={styles.doneSummary}>
-          <p><strong>{booking.service?.service_name}</strong></p>
-          <p>{booking.staff?.full_name}</p>
-          <p>{booking.date ? formatDate(booking.date) : ''} — {booking.time}</p>
-          <p>{booking.name} · {booking.phone}</p>
-        </div>
-        <p className={styles.doneNote}>
-          İşletme sizi onaylayacak.{' '}
+        <p className={styles.doneSubtitle}>
+          İşletme en kısa sürede onaylayacak.
           {business.phone ? (
-            <>
-              Değişiklik için{' '}
-              <a href={`tel:${business.phone}`} className={styles.doneLink}>
-                {business.phone}
-              </a>
-              {' '}numarasını arayabilirsiniz.
-            </>
+            <> Sorularınız için <a href={`tel:${business.phone}`} className={styles.doneLink}>{business.phone}</a> numarasını arayabilirsiniz.</>
           ) : null}
         </p>
-        <Button
-          variant="secondary"
+
+        {/* Booking summary */}
+        <div className={styles.doneSummary}>
+          <div className={styles.doneSummaryRow}>
+            <span className={styles.doneSummaryKey}>Hizmet</span>
+            <span className={styles.doneSummaryVal}>{booking.service?.service_name}</span>
+          </div>
+          <div className={styles.doneSummaryRow}>
+            <span className={styles.doneSummaryKey}>Personel</span>
+            <span className={styles.doneSummaryVal}>{booking.staff?.full_name}</span>
+          </div>
+          <div className={styles.doneSummaryRow}>
+            <span className={styles.doneSummaryKey}>Tarih &amp; Saat</span>
+            <span className={styles.doneSummaryVal}>
+              {booking.date ? formatDate(booking.date) : ''} — {booking.time}
+            </span>
+          </div>
+          <div className={styles.doneSummaryRow}>
+            <span className={styles.doneSummaryKey}>Müşteri</span>
+            <span className={styles.doneSummaryVal}>{booking.name} · {booking.phone}</span>
+          </div>
+        </div>
+
+        {/* Action buttons */}
+        <div className={styles.doneActions}>
+          <a href="/appointments" className={styles.doneActionBtn}>
+            📅 Randevularıma Git
+          </a>
+          <a href="/dashboard" className={styles.doneActionBtnSecondary}>
+            ◧ Dashboard&apos;a Git
+          </a>
+        </div>
+
+        <button
+          className={styles.doneNewBooking}
           onClick={() => { setStep('service'); setBooking(EMPTY_BOOKING) }}
         >
-          Yeni Randevu Al
-        </Button>
+          + Yeni Randevu Al
+        </button>
       </div>
     )
   }
@@ -233,7 +273,9 @@ export function BookingFlow({
   return (
     <div>
       <StepBar current={step} />
+      <CancelBar onCancel={handleCancel} />
 
+      {/* ── Hizmet ── */}
       {step === 'service' && (
         <div className={styles.stepContent}>
           <h2 className={styles.stepTitle}>Hizmet Seçin</h2>
@@ -245,10 +287,14 @@ export function BookingFlow({
                 <button
                   key={svc.id}
                   className={[styles.optionCard, booking.service?.id === svc.id ? styles.selected : ''].filter(Boolean).join(' ')}
-                  onClick={() => { setBooking((b) => ({ ...b, service: svc, staff: null, date: '', time: '' })); setStep('staff') }}
+                  onClick={() => {
+                    setBooking((b) => ({ ...b, service: svc, staff: null, date: '', time: '' }))
+                    setStep('staff')
+                  }}
                 >
                   <span className={styles.optionName}>{svc.service_name}</span>
-                  <span className={styles.optionMeta}>{svc.duration_minutes} dk · ₺{Number(svc.price).toFixed(0)}</span>
+                  <span className={styles.optionMeta}>{svc.duration_minutes} dk</span>
+                  <span className={styles.optionPrice}>₺{Number(svc.price).toFixed(0)}</span>
                 </button>
               ))}
             </div>
@@ -256,6 +302,7 @@ export function BookingFlow({
         </div>
       )}
 
+      {/* ── Personel ── */}
       {step === 'staff' && (
         <div className={styles.stepContent}>
           <h2 className={styles.stepTitle}>Personel Seçin</h2>
@@ -267,7 +314,10 @@ export function BookingFlow({
                 <button
                   key={s.id}
                   className={[styles.optionCard, booking.staff?.id === s.id ? styles.selected : ''].filter(Boolean).join(' ')}
-                  onClick={() => { setBooking((b) => ({ ...b, staff: s, date: '', time: '' })); setStep('datetime') }}
+                  onClick={() => {
+                    setBooking((b) => ({ ...b, staff: s, date: '', time: '' }))
+                    setStep('datetime')
+                  }}
                 >
                   <span className={styles.staffAvatar}>{s.full_name.charAt(0).toUpperCase()}</span>
                   <span className={styles.optionName}>{s.full_name}</span>
@@ -276,23 +326,34 @@ export function BookingFlow({
               ))}
             </div>
           )}
-          <button className={styles.backLink} onClick={() => setStep('service')}>← Geri</button>
+          <div className={styles.stepActions}>
+            <button className={styles.backLink} onClick={() => setStep('service')}>← Geri</button>
+          </div>
         </div>
       )}
 
+      {/* ── Tarih & Saat ── */}
       {step === 'datetime' && (
         <div className={styles.stepContent}>
           <h2 className={styles.stepTitle}>Tarih ve Saat Seçin</h2>
           <div className={styles.dateScroll}>
-            {dates.map((d) => (
-              <button
-                key={d}
-                className={[styles.dateChip, booking.date === d ? styles.dateSelected : ''].filter(Boolean).join(' ')}
-                onClick={() => setBooking((b) => ({ ...b, date: d, time: '' }))}
-              >
-                {formatDate(d)}
-              </button>
-            ))}
+            {dates.map((d) => {
+              const dateObj = new Date(d + 'T00:00:00')
+              const dayName = dateObj.toLocaleDateString('tr-TR', { weekday: 'short' })
+              const dayNum  = dateObj.getDate()
+              const month   = dateObj.toLocaleDateString('tr-TR', { month: 'short' })
+              return (
+                <button
+                  key={d}
+                  className={[styles.dateChip, booking.date === d ? styles.dateSelected : ''].filter(Boolean).join(' ')}
+                  onClick={() => setBooking((b) => ({ ...b, date: d, time: '' }))}
+                >
+                  <span className={styles.dateChipDay}>{dayName}</span>
+                  <span className={styles.dateChipNum}>{dayNum}</span>
+                  <span className={styles.dateChipMonth}>{month}</span>
+                </button>
+              )
+            })}
           </div>
           {booking.date && (
             <>
@@ -323,16 +384,36 @@ export function BookingFlow({
         </div>
       )}
 
+      {/* ── İletişim & Onay ── */}
       {step === 'contact' && (
         <div className={styles.stepContent}>
           <h2 className={styles.stepTitle}>İletişim Bilgileri</h2>
+
+          {/* Seçim özeti */}
           <div className={styles.summaryBox}>
-            <p className={styles.summaryRow}><span className={styles.summaryKey}>Hizmet</span><span>{booking.service?.service_name} ({booking.service?.duration_minutes} dk)</span></p>
-            <p className={styles.summaryRow}><span className={styles.summaryKey}>Personel</span><span>{booking.staff?.full_name}</span></p>
-            <p className={styles.summaryRow}><span className={styles.summaryKey}>Tarih</span><span>{booking.date ? formatDate(booking.date) : ''}</span></p>
-            <p className={styles.summaryRow}><span className={styles.summaryKey}>Saat</span><span>{booking.time}</span></p>
-            <p className={styles.summaryRow}><span className={styles.summaryKey}>Fiyat</span><span>₺{Number(booking.service?.price ?? 0).toFixed(0)}</span></p>
+            <p className={styles.summaryTitle}>Randevu Özeti</p>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryKey}>Hizmet</span>
+              <span className={styles.summaryVal}>{booking.service?.service_name} ({booking.service?.duration_minutes} dk)</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryKey}>Personel</span>
+              <span className={styles.summaryVal}>{booking.staff?.full_name}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryKey}>Tarih</span>
+              <span className={styles.summaryVal}>{booking.date ? formatDate(booking.date) : ''}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryKey}>Saat</span>
+              <span className={styles.summaryVal}>{booking.time}</span>
+            </div>
+            <div className={styles.summaryRow}>
+              <span className={styles.summaryKey}>Fiyat</span>
+              <span className={styles.summaryVal}>₺{Number(booking.service?.price ?? 0).toFixed(0)}</span>
+            </div>
           </div>
+
           <form onSubmit={handleSubmit} className={styles.contactForm}>
             <Input label="Ad Soyad *" id="name" value={booking.name}
               onChange={(e) => setBooking((b) => ({ ...b, name: e.target.value }))}

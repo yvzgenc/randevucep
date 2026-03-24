@@ -1,0 +1,126 @@
+.wrap { display: flex; flex-direction: column; gap: 0; }
+
+/* ── Config warning ── */
+.configWarning {
+  display: flex;
+  gap: 12px;
+  padding: 14px 16px;
+  background: var(--color-warning-bg);
+  border: 1px solid rgba(245, 158, 11, 0.3);
+  border-radius: var(--radius-md);
+  margin-bottom: 16px;
+  align-items: flex-start;
+}
+
+.configWarningIcon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+
+.configWarningTitle {
+  font-size: 13px;
+  font-weight: 700;
+  color: var(--color-warning);
+  margin-bottom: 4px;
+}
+
+.configWarningDesc {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.55;
+}
+
+.configWarningDesc code {
+  font-family: ui-monospace, monospace;
+  background: rgba(255,255,255,0.07);
+  padding: 1px 5px;
+  border-radius: 4px;
+  font-size: 11px;
+}
+
+/* ── Toggle list ── */
+.toggleList {
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  overflow: hidden;
+}
+
+.toggleRow {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 16px;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  cursor: pointer;
+}
+
+.toggleRow:last-child { border-bottom: none; }
+
+.toggleInfo { flex: 1; }
+
+.toggleTitle {
+  font-size: 14px;
+  font-weight: 600;
+  margin-bottom: 3px;
+  color: var(--color-text);
+}
+
+.toggleDesc {
+  font-size: 12px;
+  color: var(--color-muted);
+  line-height: 1.5;
+}
+
+/* ── Toggle switch ── */
+.toggle {
+  flex-shrink: 0;
+  width: 44px;
+  height: 24px;
+  border-radius: 99px;
+  background: rgba(255,255,255,0.1);
+  border: none;
+  position: relative;
+  cursor: pointer;
+  transition: background .2s;
+  padding: 0;
+}
+
+.toggle:disabled { opacity: 0.4; cursor: not-allowed; }
+
+.toggleOn { background: var(--color-accent); }
+
+.toggleThumb {
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: #fff;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.3);
+  transition: transform .2s;
+  pointer-events: none;
+}
+
+.toggleOn .toggleThumb { transform: translateX(20px); }
+
+/* ── Save row ── */
+.saveRow {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 12px;
+  margin-top: 14px;
+  flex-wrap: wrap;
+}
+
+.errorMsg {
+  font-size: 13px;
+  color: var(--color-danger);
+  flex: 1;
+}
+
+.successMsg {
+  font-size: 13px;
+  color: var(--color-success);
+  font-weight: 600;
+}

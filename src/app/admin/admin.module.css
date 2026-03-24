@@ -431,3 +431,40 @@
   .main          { padding: 24px 16px; }
   .detailGrid    { grid-template-columns: 1fr; }
 }
+
+/* ── Sidebar inner (nav + logout) ── */
+.sidebarInner {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.sidebarBottom {
+  padding: 12px 8px;
+  border-top: 1px solid var(--color-border);
+  margin-top: auto;
+}
+
+.logoutBtn {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  width: 100%;
+  padding: 9px 12px;
+  background: none;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--color-muted);
+  cursor: pointer;
+  font-family: inherit;
+  transition: color 0.15s, background 0.15s;
+  text-align: left;
+}
+
+.logoutBtn:hover {
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+}

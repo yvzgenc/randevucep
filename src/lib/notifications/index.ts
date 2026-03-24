@@ -158,3 +158,157 @@ export async function notifyUpcomingReminder(opts: {
     data:    opts.data,
   })
 }
+
+// ─── SMS / WhatsApp dispatch ──────────────────────────────────────────────────
+
+import { TwilioSmsProvider, TwilioWhatsAppProvider, normalisePhone } from './providers/twilio'
+import { renderSmsTemplate } from './templates'
+import type { SmsProvider } from './types'
+
+let _smsProvider:       SmsProvider | null = null
+let _whatsappProvider:  SmsProvider | null = null
+
+function getSmsProvider(): SmsProvider {
+  if (_smsProvider) return _smsProvider
+  _smsProvider = new TwilioSmsProvider()
+  return _smsProvider
+}
+
+function getWhatsAppProvider(): SmsProvider {
+  if (_whatsappProvider) return _whatsappProvider
+  _whatsappProvider = new TwilioWhatsAppProvider()
+  return _whatsappProvider
+}
+
+/**
+ * Send an SMS notification. Never throws.
+ * Phone number is normalised to E.164 before sending.
+ */
+export async function sendSmsNotification(opts: {
+  event:   import('./types').NotificationEvent
+  channel: 'sms' | 'whatsapp'
+  to:      string   // raw phone number
+  data:    import('./types').NotificationData
+}): Promise<NotificationResult> {
+  const phone = normalisePhone(opts.to)
+  const rendered = renderSmsTemplate(opts.event, opts.data)
+
+  const provider = opts.channel === 'whatsapp'
+    ? getWhatsAppProvider()
+    : getSmsProvider()
+
+  try {
+    const result = await provider.send({ to: phone, body: rendered.body })
+    logResult(opts.event, phone, result, provider.name)
+    return result
+  } catch (err) {
+    const error = err instanceof Error ? err.message : 'SMS provider threw'
+    console.error(`[notifications/sms] Uncaught error provider=${provider.name}:`, error)
+    return { success: false, error }
+  }
+}
+
+// ─── Combined helpers (email + optional SMS/WhatsApp) ────────────────────────
+
+export interface SmsChannelConfig {
+  smsEnabled:      boolean
+  whatsappEnabled: boolean
+  customerPhone:   string | null | undefined
+}
+
+/**
+ * Send booking confirmation via all enabled channels.
+ * Pass smsConfig to also send SMS/WhatsApp alongside email.
+ */
+export async function notifyBookingCreatedMulti(opts: {
+  customerEmail:   string
+  customerName:    string
+  businessEmail?:  string
+  data:            import('./types').NotificationData
+  sms?:            SmsChannelConfig
+}): Promise<void> {
+  const tasks: Promise<unknown>[] = [
+    sendNotification({
+      event:   'booking_created_customer',
+      channel: 'email',
+      to:      opts.customerEmail,
+      toName:  opts.customerName,
+      data:    opts.data,
+    }),
+  ]
+
+  if (opts.businessEmail) {
+    tasks.push(sendNotification({
+      event:   'booking_created_business',
+      channel: 'email',
+      to:      opts.businessEmail,
+      data:    opts.data,
+    }))
+  }
+
+  const phone = opts.sms?.customerPhone?.trim()
+  if (phone && phone.length >= 10) {
+    if (opts.sms?.whatsappEnabled) {
+      tasks.push(sendSmsNotification({
+        event:   'booking_created_customer',
+        channel: 'whatsapp',
+        to:      phone,
+        data:    opts.data,
+      }))
+    } else if (opts.sms?.smsEnabled) {
+      tasks.push(sendSmsNotification({
+        event:   'booking_created_customer',
+        channel: 'sms',
+        to:      phone,
+        data:    opts.data,
+      }))
+    }
+  }
+
+  await Promise.allSettled(tasks)
+}
+
+/**
+ * Send reminder via all enabled channels.
+ */
+export async function notifyUpcomingReminderMulti(opts: {
+  customerEmail: string
+  customerName:  string
+  data:          import('./types').NotificationData
+  sms?:          SmsChannelConfig
+}): Promise<NotificationResult> {
+  const tasks: Promise<NotificationResult>[] = [
+    sendNotification({
+      event:   'upcoming_reminder',
+      channel: 'email',
+      to:      opts.customerEmail,
+      toName:  opts.customerName,
+      data:    opts.data,
+    }),
+  ]
+
+  const phone = opts.sms?.customerPhone?.trim()
+  if (phone && phone.length >= 10) {
+    if (opts.sms?.whatsappEnabled) {
+      tasks.push(sendSmsNotification({
+        event:   'upcoming_reminder',
+        channel: 'whatsapp',
+        to:      phone,
+        data:    opts.data,
+      }))
+    } else if (opts.sms?.smsEnabled) {
+      tasks.push(sendSmsNotification({
+        event:   'upcoming_reminder',
+        channel: 'sms',
+        to:      phone,
+        data:    opts.data,
+      }))
+    }
+  }
+
+  const results = await Promise.allSettled(tasks)
+  // Return the email result as primary
+  const emailResult = results[0]
+  if (emailResult.status === 'fulfilled') return emailResult.value
+  return { success: false, error: 'All channels failed' }
+}

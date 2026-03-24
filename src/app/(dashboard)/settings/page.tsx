@@ -12,6 +12,7 @@ import {
 import styles        from './settings.module.css'
 import { UpgradeButton }   from './UpgradeButton'
 import { BillingSection }  from './BillingSection'
+import { SmsSettings }     from './SmsSettings'
 
 export const metadata: Metadata = { title: 'Ayarlar' }
 
@@ -35,6 +36,22 @@ export default async function SettingsPage() {
     .eq('business_id', business.id)
     .maybeSingle()
 
+  // Fetch business_settings for SMS toggles
+  const settingsQuery = await supabase
+    .from('business_settings')
+    .select('sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled')
+    .eq('business_id', business.id)
+    .maybeSingle()
+
+  const smsRow = settingsQuery.data
+
+  // Check if Twilio is configured (server-side only — never expose keys to client)
+  const twilioConfigured = Boolean(
+    process.env.TWILIO_ACCOUNT_SID &&
+    process.env.TWILIO_AUTH_TOKEN  &&
+    process.env.TWILIO_FROM_PHONE
+  )
+
   const subscription = subQuery.data ?? null
   const currentPlan  = toPlanName(subscription?.plan_name)
   const planConfig   = getPlanConfig(currentPlan)
@@ -52,6 +69,18 @@ export default async function SettingsPage() {
           supabase={supabase}
           businessId={business.id}
           planName={currentPlan}
+        />
+      </section>
+
+      {/* ── SMS & WhatsApp notifications ── */}
+      <section className={styles.section}>
+        <h2 className={styles.sectionTitle}>SMS &amp; WhatsApp Bildirimleri</h2>
+        <SmsSettings
+          businessId={business.id}
+          smsEnabled={smsRow?.sms_notifications_enabled ?? false}
+          whatsappEnabled={smsRow?.whatsapp_notifications_enabled ?? false}
+          smsReminderEnabled={smsRow?.sms_reminder_enabled ?? false}
+          twilioConfigured={twilioConfigured}
         />
       </section>
 

@@ -96,28 +96,37 @@ export type Database = {
       }
       business_settings: {
         Row: {
-          business_id: number
-          closing_time: string
-          created_at: string | null
-          id: number
-          opening_time: string
-          slot_minutes: number
+          business_id:                    number
+          closing_time:                   string
+          created_at:                     string | null
+          id:                             number
+          opening_time:                   string
+          slot_minutes:                   number
+          sms_notifications_enabled:      boolean
+          whatsapp_notifications_enabled: boolean
+          sms_reminder_enabled:           boolean
         }
         Insert: {
-          business_id: number
-          closing_time?: string
-          created_at?: string | null
-          id?: number
-          opening_time?: string
-          slot_minutes?: number
+          business_id:                    number
+          closing_time?:                  string
+          created_at?:                    string | null
+          id?:                            number
+          opening_time?:                  string
+          slot_minutes?:                  number
+          sms_notifications_enabled?:     boolean
+          whatsapp_notifications_enabled?: boolean
+          sms_reminder_enabled?:          boolean
         }
         Update: {
-          business_id?: number
-          closing_time?: string
-          created_at?: string | null
-          id?: number
-          opening_time?: string
-          slot_minutes?: number
+          business_id?:                   number
+          closing_time?:                  string
+          created_at?:                    string | null
+          id?:                            number
+          opening_time?:                  string
+          slot_minutes?:                  number
+          sms_notifications_enabled?:     boolean
+          whatsapp_notifications_enabled?: boolean
+          sms_reminder_enabled?:          boolean
         }
         Relationships: [
           {

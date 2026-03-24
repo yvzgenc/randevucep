@@ -1,11 +1,11 @@
 'use server'
 
 // ─── Server-side booking action ───────────────────────────────────────────────
-// Runs entirely server-side — guarantees notification fires even if the browser
-// tab closes after submission.
+// Sends email AND optional SMS/WhatsApp after booking based on business settings.
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { notifyBookingCreated }        from '@/lib/notifications'
+import { notifyBookingCreatedMulti }   from '@/lib/notifications'
+import type { Database }               from '@/types/database'
 
 export interface BookAppointmentArgs {
   businessId:       number
@@ -28,6 +28,8 @@ export interface BookAppointmentResult {
   customerId?:    number
   error?:         string
 }
+
+type ApptRow = Database['public']['Tables']['appointments']['Row']
 
 export async function bookAppointment(
   args: BookAppointmentArgs,
@@ -54,39 +56,46 @@ export async function bookAppointment(
     return { error: 'Randevu oluşturulamadı: ' + error.message }
   }
 
-  // data is typed as the book_appointment Returns shape via database.ts
-  // Cast through unknown once — the RPC returns jsonb which the SDK types as Json
   const rpcResult = data as unknown as {
     error?:          string
     appointment_id?: number
     customer_id?:    number
   } | null
 
-  if (!rpcResult) {
-    return { error: 'Randevu kaydı alınamadı.' }
-  }
-
-  if (rpcResult.error) {
-    return { error: rpcResult.error }
-  }
+  if (!rpcResult) return { error: 'Randevu kaydı alınamadı.' }
+  if (rpcResult.error) return { error: rpcResult.error }
 
   const appointmentId = rpcResult.appointment_id ?? undefined
   const customerId    = rpcResult.customer_id    ?? undefined
 
-  // ── Server-side notification (fire-and-forget) ────────────────────────────
+  // ── Notifications ─────────────────────────────────────────────────────────
   if (appointmentId !== undefined && args.customerEmail?.includes('@')) {
-    const { data: biz } = await supabase
-      .from('businesses')
-      .select('name, slug, phone, email')
-      .eq('id', args.businessId)
-      .maybeSingle()
+    // Fetch business info + settings in parallel
+    const [bizQ, settingsQ] = await Promise.all([
+      supabase
+        .from('businesses')
+        .select('name, slug, phone, email')
+        .eq('id', args.businessId)
+        .maybeSingle(),
+      supabase
+        .from('business_settings')
+        .select('sms_notifications_enabled, whatsapp_notifications_enabled')
+        .eq('business_id', args.businessId)
+        .maybeSingle(),
+    ])
 
-    if (biz) {
+    if (bizQ.data) {
+      const biz      = bizQ.data
+      const settings = settingsQ.data
+
       const appointmentDate = new Date(args.date + 'T00:00:00').toLocaleDateString('tr-TR', {
         weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
       })
 
-      void notifyBookingCreated({
+      const smsEnabled      = settings?.sms_notifications_enabled      ?? false
+      const whatsappEnabled = settings?.whatsapp_notifications_enabled ?? false
+
+      void notifyBookingCreatedMulti({
         customerEmail: args.customerEmail,
         customerName:  args.customerName,
         businessEmail: biz.email ?? undefined,
@@ -102,6 +111,12 @@ export async function bookAppointment(
           appointmentTime: args.time,
           appointmentId,
         },
+        // Only pass smsConfig if at least one channel is enabled
+        sms: (smsEnabled || whatsappEnabled) ? {
+          smsEnabled,
+          whatsappEnabled,
+          customerPhone: args.customerPhone,
+        } : undefined,
       })
     }
   }
