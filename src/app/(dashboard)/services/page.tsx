@@ -1,7 +1,7 @@
-import type { Metadata } from 'next'
-import { redirect } from 'next/navigation'
+import type { Metadata }              from 'next'
+import { redirect }                   from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
-import { ServicesManager } from '@/components/dashboard/ServicesManager'
+import { ServicesClient }             from './ServicesClient'
 
 export const metadata: Metadata = { title: 'Hizmetler' }
 
@@ -10,15 +10,16 @@ export default async function ServicesPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const { data: business } = await supabase
+  const bizQuery = await supabase
     .from('businesses')
     .select('*')
     .eq('owner_id', user.id)
     .maybeSingle()
 
-  if (!business) redirect('/onboarding')
+  if (!bizQuery.data) redirect('/onboarding')
+  const business = bizQuery.data
 
-  const [{ data: services }, { data: subscription }] = await Promise.all([
+  const [servicesQ, subQ] = await Promise.all([
     supabase
       .from('services')
       .select('*')
@@ -32,11 +33,11 @@ export default async function ServicesPage() {
   ])
 
   return (
-    <ServicesManager
+    <ServicesClient
       businessId={business.id}
       businessType={business.business_type ?? null}
-      planName={subscription?.plan_name ?? null}
-      initial={services ?? []}
+      planName={subQ.data?.plan_name ?? null}
+      services={servicesQ.data ?? []}
     />
   )
 }

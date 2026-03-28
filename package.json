@@ -7,7 +7,9 @@
     "build": "next build",
     "start": "next start",
     "lint": "next lint",
-    "typecheck": "tsc --noEmit"
+    "typecheck": "tsc --noEmit",
+    "todo": "node tools/todo-cli/dist/index.js",
+    "todo:build": "cd tools/todo-cli && npm install && npm run build"
   },
   "dependencies": {
     "@supabase/ssr": "0.5.2",

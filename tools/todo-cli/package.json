@@ -1,0 +1,24 @@
+{
+  "name": "todo-cli",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Track TODO comments across your codebase",
+  "main": "dist/index.js",
+  "bin": {
+    "todo": "./dist/index.js"
+  },
+  "scripts": {
+    "build": "tsc",
+    "dev": "ts-node src/index.ts",
+    "todo": "ts-node src/index.ts"
+  },
+  "dependencies": {
+    "chalk": "4.1.2",
+    "commander": "11.1.0"
+  },
+  "devDependencies": {
+    "@types/node": "22.0.0",
+    "ts-node": "10.9.2",
+    "typescript": "5.8.3"
+  }
+}

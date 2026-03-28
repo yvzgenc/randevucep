@@ -1,0 +1,66 @@
+/* ── Shared tab bar — used by appointments, customers, services, staff ── */
+
+.tabBar {
+  display: flex;
+  gap: 2px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  margin-bottom: 20px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  flex: 1;
+  padding: 8px 12px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+  justify-content: center;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: rgba(255,255,255,.04);
+}
+
+.tabActive {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Count badges ── */
+.badge {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  border-radius: 99px;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+}
+
+.badgeGray   { background: rgba(255,255,255,.08); color: var(--color-muted); }
+.badgeWarn   { background: var(--color-warning-bg); color: var(--color-warning); }
+.badgeAccent { background: var(--color-accent-glow); color: var(--color-accent-2); }
+.badgeGreen  { background: var(--color-success-bg); color: var(--color-success); }
+.badgeRed    { background: var(--color-danger-bg);  color: var(--color-danger); }
+
+@media (max-width: 600px) {
+  .tab { font-size: 11px; padding: 8px 8px; flex: none; }
+}

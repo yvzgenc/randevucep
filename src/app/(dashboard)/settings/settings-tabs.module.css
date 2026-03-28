@@ -1,0 +1,51 @@
+/* ── Tab bar ── */
+.tabBar {
+  display: flex;
+  gap: 2px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-lg);
+  padding: 4px;
+  margin-bottom: 24px;
+  flex-wrap: wrap;
+}
+
+.tab {
+  flex: 1;
+  padding: 9px 14px;
+  border-radius: 10px;
+  border: none;
+  background: none;
+  font-size: 12px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background .15s, color .15s;
+  white-space: nowrap;
+  text-align: center;
+}
+
+.tab:hover {
+  color: var(--color-text);
+  background: rgba(255,255,255,.04);
+}
+
+.tabActive {
+  background: var(--color-surface);
+  color: var(--color-text);
+  box-shadow: var(--shadow-sm);
+}
+
+/* ── Panel ── */
+.panel {
+  min-height: 200px;
+}
+
+@media (max-width: 640px) {
+  .tab {
+    font-size: 11px;
+    padding: 8px 10px;
+    flex: none;
+  }
+}
