@@ -1,0 +1,203 @@
+/* ── Backdrop ── */
+.backdrop {
+  position: fixed;
+  inset: 0;
+  background: rgba(0, 0, 0, 0.55);
+  backdrop-filter: blur(2px);
+  z-index: 400;
+  animation: fadeIn .15s ease;
+}
+
+@keyframes fadeIn { from { opacity: 0 } to { opacity: 1 } }
+@keyframes slideUp { from { opacity: 0; transform: translateY(16px) } to { opacity: 1; transform: translateY(0) } }
+
+/* ── Modal ── */
+.modal {
+  position: fixed;
+  top: 50%;
+  left: 50%;
+  transform: translate(-50%, -50%);
+  width: min(540px, calc(100vw - 32px));
+  background: var(--color-surface);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-xl, 16px);
+  box-shadow: 0 24px 64px rgba(0,0,0,.4);
+  z-index: 500;
+  display: flex;
+  flex-direction: column;
+  max-height: calc(100vh - 48px);
+  animation: slideUp .2s ease;
+}
+
+/* ── Header ── */
+.modalHeader {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.modalTitle {
+  font-size: 15px;
+  font-weight: 700;
+}
+
+.closeBtn {
+  background: none;
+  border: none;
+  color: var(--color-muted);
+  font-size: 16px;
+  cursor: pointer;
+  padding: 4px 8px;
+  border-radius: var(--radius-sm);
+  line-height: 1;
+  transition: color .15s, background .15s;
+}
+
+.closeBtn:hover {
+  color: var(--color-text);
+  background: rgba(255,255,255,.06);
+}
+
+/* ── Body ── */
+.body {
+  padding: 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  overflow-y: auto;
+  flex: 1;
+}
+
+.row2 {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+
+.field {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.label {
+  font-size: 12px;
+  font-weight: 700;
+  color: var(--color-text-2);
+  letter-spacing: .2px;
+}
+
+.optional {
+  font-weight: 400;
+  color: var(--color-muted);
+  font-size: 11px;
+}
+
+.input,
+.select {
+  padding: 9px 12px;
+  background: var(--color-surface-2);
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  color: var(--color-text);
+  font-size: 13px;
+  font-family: inherit;
+  transition: border-color .15s, box-shadow .15s;
+  appearance: none;
+  -webkit-appearance: none;
+}
+
+.input:focus,
+.select:focus {
+  outline: none;
+  border-color: var(--color-accent);
+  box-shadow: 0 0 0 3px rgba(108,92,231,.12);
+}
+
+.input::placeholder { color: var(--color-muted); opacity: .6; }
+
+/* ── Summary pill row ── */
+.summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+  padding: 12px 14px;
+  background: var(--color-accent-glow);
+  border: 1px solid rgba(108,92,231,.2);
+  border-radius: var(--radius-md);
+}
+
+.summary span {
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--color-accent-2);
+  white-space: nowrap;
+}
+
+/* ── Error ── */
+.error {
+  font-size: 12px;
+  color: var(--color-danger);
+  background: var(--color-danger-bg);
+  border: 1px solid rgba(239,68,68,.2);
+  border-radius: var(--radius-md);
+  padding: 9px 12px;
+  line-height: 1.5;
+}
+
+/* ── Footer ── */
+.footer {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 10px;
+  padding: 14px 20px;
+  border-top: 1px solid var(--color-border);
+  flex-shrink: 0;
+}
+
+.cancelBtn {
+  padding: 9px 18px;
+  background: none;
+  border: 1px solid var(--color-border);
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 600;
+  font-family: inherit;
+  color: var(--color-muted);
+  cursor: pointer;
+  transition: background .15s, border-color .15s;
+}
+
+.cancelBtn:hover:not(:disabled) {
+  background: rgba(255,255,255,.04);
+  border-color: var(--color-border-h);
+}
+
+.submitBtn {
+  padding: 9px 22px;
+  background: var(--color-accent);
+  color: #fff;
+  border: none;
+  border-radius: var(--radius-md);
+  font-size: 13px;
+  font-weight: 700;
+  font-family: inherit;
+  cursor: pointer;
+  transition: background .15s, transform .1s;
+}
+
+.submitBtn:hover:not(:disabled) {
+  background: var(--color-accent-h);
+  transform: translateY(-1px);
+}
+
+.submitBtn:disabled,
+.cancelBtn:disabled { opacity: .5; cursor: not-allowed; }
+
+@media (max-width: 480px) {
+  .row2 { grid-template-columns: 1fr; }
+}

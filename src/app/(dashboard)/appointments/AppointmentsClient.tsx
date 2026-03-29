@@ -1,16 +1,21 @@
 'use client'
 
 import React, { useState, useMemo, useCallback } from 'react'
-import type { Appointment } from '@/types/database'
-import { CalendarView }       from './CalendarView'
-import { AppointmentActions } from './AppointmentActions'
-import calStyles from './calendar.module.css'
-import styles    from './appointments.module.css'
-import tabStyles from './appt-tabs.module.css'
+import type { Appointment, Service, StaffMember } from '@/types/database'
+import { CalendarView }          from './CalendarView'
+import { AppointmentActions }    from './AppointmentActions'
+import { AddAppointmentModal }   from './AddAppointmentModal'
+import calStyles  from './calendar.module.css'
+import styles     from './appointments.module.css'
+import tabStyles  from './appt-tabs.module.css'
 import srchStyles from './search.module.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
-interface Props { appointments: Appointment[] }
+interface Props {
+  appointments: Appointment[]
+  services:     Service[]
+  staff:        StaffMember[]
+}
 type TabId = 'all' | 'pending' | 'confirmed' | 'done' | 'cancelled'
 
 const TABS: { id: TabId; label: string; empty: string }[] = [
@@ -46,9 +51,10 @@ function norm(s: string): string {
 }
 
 // ─── Component ────────────────────────────────────────────────────────────────
-export function AppointmentsClient({ appointments }: Props) {
+export function AppointmentsClient({ appointments, services, staff }: Props) {
   const [tab,       setTab]       = useState<TabId>('all')
   const [view,      setView]      = useState<'list' | 'week'>('list')
+  const [showModal, setShowModal] = useState(false)
 
   // ── Search & filter state ──────────────────────────────────────────────────
   const [query,     setQuery]     = useState('')
@@ -117,17 +123,36 @@ export function AppointmentsClient({ appointments }: Props) {
       {/* ── Header ── */}
       <div className={styles.header}>
         <h1 className={styles.title}>Randevular</h1>
-        <div className={calStyles.viewToggle}>
+        <div style={{ display: 'flex', alignItems: 'center', gap: 10 }}>
           <button
-            className={`${calStyles.viewBtn} ${view === 'list' ? calStyles.viewBtnActive : ''}`}
-            onClick={() => setView('list')}
-          >☰ Liste</button>
-          <button
-            className={`${calStyles.viewBtn} ${view === 'week' ? calStyles.viewBtnActive : ''}`}
-            onClick={() => setView('week')}
-          >▦ Hafta</button>
+            className={styles.addBtn}
+            onClick={() => setShowModal(true)}
+            type="button"
+          >
+            + Randevu Ekle
+          </button>
+          <div className={calStyles.viewToggle}>
+            <button
+              className={`${calStyles.viewBtn} ${view === 'list' ? calStyles.viewBtnActive : ''}`}
+              onClick={() => setView('list')}
+            >☰ Liste</button>
+            <button
+              className={`${calStyles.viewBtn} ${view === 'week' ? calStyles.viewBtnActive : ''}`}
+              onClick={() => setView('week')}
+            >▦ Hafta</button>
+          </div>
         </div>
       </div>
+
+      {/* ── Add appointment modal ── */}
+      {showModal && (
+        <AddAppointmentModal
+          services={services}
+          staff={staff}
+          onClose={() => setShowModal(false)}
+          onDone={() => { setShowModal(false); window.location.reload() }}
+        />
+      )}
 
       {/* ── Tab bar ── */}
       <div className={tabStyles.tabBar}>

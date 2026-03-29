@@ -3,22 +3,10 @@ import { redirect }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { trialDaysRemaining, getPlanConfig } from '@/lib/plans'
 import { AnalyticsSection }      from './AnalyticsSection'
+import { TodayList }             from './TodayList'
 import styles from './dashboard.module.css'
 
 export const metadata: Metadata = { title: 'Genel Bakış' }
-
-function getGreeting(): string {
-  const h = new Date().getHours()
-  if (h < 12) return 'Günaydın'
-  if (h < 18) return 'İyi günler'
-  return 'İyi akşamlar'
-}
-
-function getTodayLabel(): string {
-  return new Date().toLocaleDateString('tr-TR', {
-    weekday: 'long', day: 'numeric', month: 'long',
-  })
-}
 
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient()
@@ -27,6 +15,7 @@ export default async function DashboardPage() {
   const user = authQuery.data.user
   if (!user) redirect('/login')
 
+  // Fetch business — query-object pattern
   const bizQuery = await supabase
     .from('businesses')
     .select('*')
@@ -38,7 +27,7 @@ export default async function DashboardPage() {
 
   const today = new Date().toISOString().split('T')[0]
 
-  const [todayQ, subQ, pendingQ] = await Promise.all([
+  const [todayQ, subQ, pendingQ, todayListQ] = await Promise.all([
     supabase
       .from('appointments')
       .select('id', { count: 'exact', head: true })
@@ -55,10 +44,17 @@ export default async function DashboardPage() {
       .eq('business_id', business.id)
       .eq('status', 'Bekliyor')
       .gte('appointment_date', today),
+    supabase
+      .from('appointments')
+      .select('*')
+      .eq('business_id', business.id)
+      .eq('appointment_date', today)
+      .order('appointment_time', { ascending: true }),
   ])
 
   const todayCount   = todayQ.count ?? 0
   const pendingCount = pendingQ.count ?? 0
+  const todayList    = todayListQ.data ?? []
   const subscription = subQ.data ?? null
 
   const planConfig  = getPlanConfig(subscription?.plan_name)
@@ -70,10 +66,10 @@ export default async function DashboardPage() {
       {/* ── Page header ── */}
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>
-            {getGreeting()}, <span className={styles.titleAccent}>{business.name}</span>
-          </h1>
-          <p className={styles.subtitle}>{getTodayLabel()}</p>
+          <h1 className={styles.title}>Genel Bakış</h1>
+          <p className={styles.subtitle}>
+            Hoş geldiniz, <strong>{business.name}</strong>
+          </p>
         </div>
         <a
           href={`/book/${business.slug}`}
@@ -81,20 +77,17 @@ export default async function DashboardPage() {
           rel="noreferrer"
           className={styles.bookingBadge}
         >
-          <span>🔗</span> Rezervasyon Sayfam
+          🔗 Rezervasyon Sayfam
         </a>
       </div>
 
       {/* ── Trial banner ── */}
       {trialActive && (
         <div className={styles.trialBanner}>
-          <div className={styles.trialBannerLeft}>
-            <span className={styles.trialIcon}>🎉</span>
-            <span className={styles.trialText}>
-              Deneme sürümünüz — <strong>{trialDays} gün</strong> kaldı
-            </span>
-          </div>
-          <a href="/settings#plan" className={styles.upgradeLink}>
+          <span className={styles.trialText}>
+            🎉 Deneme sürümünüz — <strong>{trialDays} gün</strong> kaldı
+          </span>
+          <a href="/settings" className={styles.upgradeLink}>
             Planı Yükselt →
           </a>
         </div>
@@ -108,7 +101,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Pending banner ── */}
+      {/* ── Bekleyen onay uyarısı ── */}
       {pendingCount > 0 && (
         <a href="/appointments" className={styles.pendingBanner}>
           <span className={styles.pendingBannerDot} />
@@ -119,39 +112,24 @@ export default async function DashboardPage() {
         </a>
       )}
 
-      {/* ── Quick stat cards ── */}
+      {/* ── Quick stat row ── */}
       <div className={styles.statsGrid}>
-        <div className={`${styles.statCard} ${styles.statCardToday}`}>
-          <div className={styles.statCardTop}>
-            <span className={styles.statIcon}>📅</span>
-            <p className={styles.statLabel}>Bugünkü Randevular</p>
-          </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Bugünkü Randevular</p>
           <p className={styles.statValue}>{todayCount}</p>
-          <p className={styles.statHint}>bugün</p>
         </div>
-
-        <div className={`${styles.statCard} ${pendingCount > 0 ? styles.statCardWarn : ''}`}>
-          <div className={styles.statCardTop}>
-            <span className={styles.statIcon}>⏳</span>
-            <p className={styles.statLabel}>Onay Bekleyen</p>
-          </div>
-          <p className={pendingCount > 0 ? styles.statValueWarning : styles.statValue}>
-            {pendingCount}
-          </p>
-          <p className={styles.statHint}>{pendingCount > 0 ? 'onay gerekiyor' : 'bekleyen yok'}</p>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Onay Bekleyen</p>
+          <p className={pendingCount > 0 ? styles.statValueWarning : styles.statValue}>{pendingCount}</p>
         </div>
-
-        <div className={`${styles.statCard} ${styles.statCardPlan}`}>
-          <div className={styles.statCardTop}>
-            <span className={styles.statIcon}>✨</span>
-            <p className={styles.statLabel}>Aktif Plan</p>
-          </div>
+        <div className={styles.statCard}>
+          <p className={styles.statLabel}>Aktif Plan</p>
           <p className={styles.statPlan}>{planConfig.label}</p>
-          <p className={styles.statHint}>
-            <a href="/settings" className={styles.statHintLink}>planı gör →</a>
-          </p>
         </div>
       </div>
+
+      {/* ── Bugün listesi ── */}
+      <TodayList appointments={todayList} />
 
       {/* ── Analytics section ── */}
       <AnalyticsSection supabase={supabase} businessId={business.id} />
