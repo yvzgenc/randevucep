@@ -53,10 +53,19 @@ export default async function BookingPage({ params }: Props) {
   if (!planConfig.online_booking_enabled) {
     return (
       <div className={styles.page}>
-        <header className={styles.header}>
-          <div className={styles.bizBrand}>
-            <div className={styles.bizLogoMark}>📅</div>
-            <span className={styles.bizName}>{business.name}</span>
+        <header className={styles.hero}>
+          <div className={styles.heroInner}>
+            <div className={styles.heroBrand}>
+              <div className={styles.heroLogoMark}>
+                {business.name.charAt(0).toUpperCase()}
+              </div>
+              <div>
+                <h1 className={styles.heroName}>{business.name}</h1>
+                {business.city && (
+                  <p className={styles.heroCity}>📍 {business.city}</p>
+                )}
+              </div>
+            </div>
           </div>
         </header>
         <main className={styles.main}>
@@ -65,11 +74,20 @@ export default async function BookingPage({ params }: Props) {
             <p className={styles.closedTitle}>Online Rezervasyon Kapalı</p>
             <p className={styles.closedDesc}>
               Bu işletme şu an online rezervasyona kapalıdır.
-              {business.phone ? ` Randevu için ${business.phone} numarasını arayabilirsiniz.` : ''}
+              {business.phone
+                ? ` Randevu almak için ${business.phone} numarasını arayabilirsiniz.`
+                : ''}
             </p>
+            {business.phone && (
+              <a href={`tel:${business.phone}`} className={styles.callBtn}>
+                📞 Hemen Ara
+              </a>
+            )}
           </div>
         </main>
-        <footer className={styles.footer}><span>📅 RandevuCep ile çalışmaktadır</span></footer>
+        <footer className={styles.footer}>
+          <span>Powered by <strong>RandevuCep</strong></span>
+        </footer>
       </div>
     )
   }
@@ -78,67 +96,79 @@ export default async function BookingPage({ params }: Props) {
   const future = new Date(Date.now() + 30 * 24 * 60 * 60 * 1000).toISOString().split('T')[0]
 
   const [servicesQ, staffQ, busyQ, settingsQ, hoursQ, closuresQ, staffWdQ] = await Promise.all([
-    supabase
-      .from('services').select('*')
+    supabase.from('services').select('*')
       .eq('business_id', business.id).eq('status', 'Aktif').order('service_name'),
-    supabase
-      .from('staff').select('*')
+    supabase.from('staff').select('*')
       .eq('business_id', business.id).eq('status', 'Aktif').order('full_name'),
-    supabase
-      .from('appointments')
+    supabase.from('appointments')
       .select('appointment_date, appointment_time, staff_id, duration_minutes')
       .eq('business_id', business.id)
       .in('status', ['Bekliyor', 'Onaylı', 'pending', 'confirmed'])
       .gte('appointment_date', today)
       .lte('appointment_date', future),
-    supabase
-      .from('business_settings')
+    supabase.from('business_settings')
       .select('opening_time, closing_time, slot_minutes')
       .eq('business_id', business.id).maybeSingle(),
-    supabase
-      .from('business_hours')
-      .select('*')
-      .eq('business_id', business.id),
-    supabase
-      .from('business_closures')
-      .select('*')
+    supabase.from('business_hours').select('*').eq('business_id', business.id),
+    supabase.from('business_closures').select('*')
       .eq('business_id', business.id)
-      .gte('closed_date', today)
-      .lte('closed_date', future),
-    supabase
-      .from('staff_working_days')
-      .select('*')
-      .eq('business_id', business.id),
+      .gte('closed_date', today).lte('closed_date', future),
+    supabase.from('staff_working_days').select('*').eq('business_id', business.id),
   ])
 
-  const settings:      typeof DEFAULT_SETTINGS   = settingsQ.data ?? DEFAULT_SETTINGS
-  const businessHours: BusinessHour[]            = hoursQ.data ?? []
-  const closures:      BusinessClosure[]         = closuresQ.data ?? []
-  const staffWd:       StaffWorkingDay[]         = staffWdQ.data ?? []
+  const settings:      typeof DEFAULT_SETTINGS = settingsQ.data ?? DEFAULT_SETTINGS
+  const businessHours: BusinessHour[]          = hoursQ.data ?? []
+  const closures:      BusinessClosure[]       = closuresQ.data ?? []
+  const staffWd:       StaffWorkingDay[]       = staffWdQ.data ?? []
 
   type BusySlot = Pick<Appointment, 'appointment_date' | 'appointment_time' | 'staff_id' | 'duration_minutes'>
   const busySlots: BusySlot[] = busyQ.data ?? []
 
-  const metaParts: string[] = []
-  if (business.city)  metaParts.push(`📍 ${business.city}`)
-  if (business.phone) metaParts.push(`📞 ${business.phone}`)
+  const serviceCount = servicesQ.data?.length ?? 0
+  const staffCount   = staffQ.data?.length ?? 0
 
   return (
     <div className={styles.page}>
-      <header className={styles.header}>
-        <div className={styles.bizBrand}>
-          <div className={styles.bizLogoMark}>📅</div>
-          <div>
-            <div className={styles.bizName}>{business.name}</div>
-            {metaParts.length > 0 && (
-              <div className={styles.bizMeta}>
-                {metaParts.map((p, i) => (
-                  <span key={p}>
-                    {i > 0 && <span className={styles.bizMetaDot} />}
-                    {p}
-                  </span>
-                ))}
-              </div>
+      {/* ── Hero header ── */}
+      <header className={styles.hero}>
+        <div className={styles.heroInner}>
+          <div className={styles.heroBrand}>
+            <div className={styles.heroLogoMark}>
+              {business.name.charAt(0).toUpperCase()}
+            </div>
+            <div>
+              <h1 className={styles.heroName}>{business.name}</h1>
+              {business.city && (
+                <p className={styles.heroCity}>📍 {business.city}</p>
+              )}
+            </div>
+          </div>
+
+          <p className={styles.heroWelcome}>
+            Hoş geldiniz! Online randevu sistemiyle kolayca randevu alabilirsiniz.
+          </p>
+
+          <div className={styles.heroMeta}>
+            {serviceCount > 0 && (
+              <span className={styles.heroMetaChip}>✂ {serviceCount} hizmet</span>
+            )}
+            {staffCount > 0 && (
+              <span className={styles.heroMetaChip}>👤 {staffCount} uzman</span>
+            )}
+            {business.phone && (
+              <a href={`tel:${business.phone}`} className={styles.heroMetaChip}>
+                📞 {business.phone}
+              </a>
+            )}
+            {business.whatsapp_number && (
+              <a
+                href={`https://wa.me/${business.whatsapp_number.replace(/\D/g, '')}`}
+                target="_blank"
+                rel="noreferrer"
+                className={`${styles.heroMetaChip} ${styles.heroWhatsapp}`}
+              >
+                💬 WhatsApp
+              </a>
             )}
           </div>
         </div>
@@ -160,7 +190,7 @@ export default async function BookingPage({ params }: Props) {
       </main>
 
       <footer className={styles.footer}>
-        <span>📅 RandevuCep ile çalışmaktadır</span>
+        <span>Powered by <strong>RandevuCep</strong></span>
       </footer>
     </div>
   )

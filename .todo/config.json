@@ -1,0 +1,77 @@
+{
+  "scan": {
+    "exclude": [
+      "node_modules",
+      ".git",
+      "dist",
+      ".next",
+      "build",
+      "out",
+      ".turbo",
+      "coverage",
+      ".todo",
+      ".cache",
+      "__pycache__"
+    ],
+    "includeExtensions": [
+      ".ts",
+      ".tsx",
+      ".js",
+      ".jsx",
+      ".mjs",
+      ".cjs",
+      ".css",
+      ".scss",
+      ".sass",
+      ".less",
+      ".html",
+      ".htm",
+      ".vue",
+      ".svelte",
+      ".py",
+      ".go",
+      ".rs",
+      ".c",
+      ".cpp",
+      ".h",
+      ".hpp",
+      ".cs",
+      ".java",
+      ".kt",
+      ".swift",
+      ".sql",
+      ".sh",
+      ".bash",
+      ".zsh",
+      ".fish",
+      ".rb",
+      ".toml",
+      ".ini",
+      ".cfg",
+      ".conf",
+      ".yaml",
+      ".yml"
+    ],
+    "customTags": []
+  },
+  "tags": {
+    "TODO": {
+      "severity": "medium"
+    },
+    "FIXME": {
+      "severity": "high"
+    },
+    "HACK": {
+      "severity": "medium"
+    },
+    "NOTE": {
+      "severity": "low"
+    },
+    "XXX": {
+      "severity": "high"
+    },
+    "OPTIMIZE": {
+      "severity": "low"
+    }
+  }
+}

@@ -8,13 +8,13 @@
 }
 
 .title {
-  font-size: 24px;
+  font-size: var(--font-size-2xl);
   font-weight: 700;
   letter-spacing: -0.5px;
 }
 
 .count {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   color: var(--color-muted);
   background: rgba(255, 255, 255, 0.04);
@@ -33,14 +33,14 @@
 }
 
 .emptyTitle {
-  font-size: 16px;
+  font-size: var(--font-size-lg);
   font-weight: 600;
   margin-bottom: 8px;
   color: var(--color-text-2);
 }
 
 .emptyDesc {
-  font-size: 13px;
+  font-size: var(--font-size-base);
   color: var(--color-muted);
   max-width: 360px;
   margin: 0 auto;
@@ -63,9 +63,9 @@
   padding: 11px 20px;
   background: var(--color-surface-2);
   border-bottom: 1px solid var(--color-border);
-  font-size: 10px;
+  font-size: var(--font-size-xs);
   font-weight: 700;
-  letter-spacing: 0.7px;
+  letter-spacing: 0.6px;
   text-transform: uppercase;
   color: var(--color-muted);
 }
@@ -76,55 +76,58 @@
   gap: 12px;
   padding: 14px 20px;
   border-bottom: 1px solid var(--color-border);
-  font-size: 13px;
+  font-size: var(--font-size-base);
   align-items: center;
-  transition: background 0.1s;
+  transition: background var(--duration-fast), box-shadow var(--duration-fast);
 }
 
 .tableRow:last-child { border-bottom: none; }
-.tableRow:hover { background: rgba(255, 255, 255, 0.02); }
+.tableRow:hover {
+  background: rgba(255, 255, 255, 0.03);
+  box-shadow: inset 3px 0 0 var(--color-accent);
+}
 
-.date   { display: block; font-weight: 600; font-size: 13px; }
-.time   { display: block; font-size: 11px; color: var(--color-muted); margin-top: 2px; }
+.date    { display: block; font-weight: 600; font-size: var(--font-size-base); }
+.time    { display: block; font-size: var(--font-size-xs); color: var(--color-muted); margin-top: 2px; }
 .primary { display: block; font-weight: 500; color: var(--color-text); }
-.phone  { display: block; font-size: 11px; color: var(--color-muted); margin-top: 2px; }
-.muted  { color: var(--color-muted); font-size: 12px; }
+.phone   { display: block; font-size: var(--font-size-xs); color: var(--color-muted); margin-top: 2px; }
+.muted   { color: var(--color-muted); font-size: var(--font-size-sm); }
 
 /* ── Status badges ── */
 .badgePending {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: var(--font-size-xs); font-weight: 600;
   background: var(--color-warning-bg);
   color: var(--color-warning);
-  border: 1px solid rgba(245, 158, 11, 0.25);
+  border: 1px solid var(--color-warning-border);
 }
 
 .badgeDone {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: var(--font-size-xs); font-weight: 600;
   background: var(--color-success-bg);
   color: var(--color-success);
-  border: 1px solid rgba(16, 185, 129, 0.25);
+  border: 1px solid var(--color-success-border);
 }
 
 .badgeCancelled {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: var(--font-size-xs); font-weight: 600;
   background: var(--color-danger-bg);
   color: var(--color-danger);
-  border: 1px solid rgba(239, 68, 68, 0.2);
+  border: 1px solid var(--color-danger-border);
 }
 
 .badgeConfirmed {
   display: inline-flex; align-items: center;
   padding: 3px 10px; border-radius: 99px;
-  font-size: 11px; font-weight: 600;
+  font-size: var(--font-size-xs); font-weight: 600;
   background: var(--color-accent-glow);
   color: var(--color-accent-2);
-  border: 1px solid rgba(108, 92, 231, 0.25);
+  border: 1px solid var(--color-accent-border);
 }
 
 /* ── Action controls ── */
@@ -147,7 +150,7 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  transition: border-color 0.15s, color 0.15s, background 0.15s;
+  transition: border-color var(--duration-fast), color var(--duration-fast), background var(--duration-fast);
 }
 
 .actionTrigger:hover:not(:disabled) {
@@ -161,7 +164,7 @@
   top: calc(100% + 6px);
   right: 0;
   background: var(--color-surface-2);
-  border: 1px solid var(--color-border);
+  border: 1px solid var(--color-border-h);
   border-radius: var(--radius-lg);
   min-width: 200px;
   z-index: 200;
@@ -181,15 +184,16 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-family: inherit;
   box-sizing: border-box;
-  transition: border-color 0.15s;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
 }
 
 .actionEmailInput:focus {
   outline: none;
   border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
 }
 
 .actionItem {
@@ -199,24 +203,24 @@
   background: transparent;
   border: none;
   text-align: left;
-  font-size: 13px;
+  font-size: var(--font-size-base);
   font-family: inherit;
   color: var(--color-text-2);
   cursor: pointer;
-  transition: background 0.12s, color 0.12s;
+  transition: background var(--duration-fast), color var(--duration-fast);
 }
 
 .actionItem:hover:not(:disabled) {
-  background: rgba(255, 255, 255, 0.04);
+  background: rgba(255, 255, 255, 0.05);
   color: var(--color-text);
 }
 
-.actionSuccess { font-size: 11px; color: var(--color-success); white-space: nowrap; }
-.actionError   { font-size: 11px; color: var(--color-danger);  white-space: nowrap; }
+.actionSuccess { font-size: var(--font-size-xs); color: var(--color-success); white-space: nowrap; }
+.actionError   { font-size: var(--font-size-xs); color: var(--color-danger);  white-space: nowrap; }
 
 .actionEmailSaved {
   padding: 7px 14px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-muted);
   border-bottom: 1px solid var(--color-border);
   background: rgba(255, 255, 255, 0.01);

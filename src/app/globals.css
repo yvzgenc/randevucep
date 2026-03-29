@@ -1,31 +1,47 @@
 :root {
   /* ── Core colors ── */
-  --color-bg:        #080a0f;
-  --color-surface:   #0f1117;
-  --color-surface-2: #161922;
+  --color-bg:        #07090e;
+  --color-surface:   #0e1118;
+  --color-surface-2: #141720;
+  --color-surface-3: #1a1e2a;
   --color-border:    rgba(255, 255, 255, 0.07);
-  --color-border-h:  rgba(255, 255, 255, 0.13);
-  --color-text:      #eef0f4;
-  --color-text-2:    #c8ccd6;
-  --color-muted:     #6b7280;
+  --color-border-h:  rgba(255, 255, 255, 0.14);
+  --color-border-s:  rgba(255, 255, 255, 0.05);
+  --color-text:      #eef0f6;
+  --color-text-2:    #c4c9d8;
+  --color-muted:     #636a7a;
 
   /* ── Brand ── */
-  --color-accent:    #6c5ce7;
-  --color-accent-h:  #5a4dd0;
-  --color-accent-2:  #7c6cf0;
-  --color-accent-glow: rgba(108, 92, 231, 0.18);
+  --color-accent:       #6c5ce7;
+  --color-accent-h:     #5a4dd0;
+  --color-accent-2:     #8b7ff5;
+  --color-accent-glow:  rgba(108, 92, 231, 0.16);
+  --color-accent-muted: rgba(108, 92, 231, 0.10);
+  --color-accent-border: rgba(108, 92, 231, 0.28);
 
   /* ── Semantic ── */
-  --color-success:   #10b981;
-  --color-success-bg: rgba(16, 185, 129, 0.1);
-  --color-warning:   #f59e0b;
-  --color-warning-bg: rgba(245, 158, 11, 0.1);
-  --color-danger:    #ef4444;
-  --color-danger-bg: rgba(239, 68, 68, 0.1);
+  --color-success:        #10b981;
+  --color-success-bg:     rgba(16, 185, 129, 0.10);
+  --color-success-border: rgba(16, 185, 129, 0.22);
+  --color-warning:        #f59e0b;
+  --color-warning-bg:     rgba(245, 158, 11, 0.10);
+  --color-warning-border: rgba(245, 158, 11, 0.25);
+  --color-danger:         #ef4444;
+  --color-danger-bg:      rgba(239, 68, 68, 0.10);
+  --color-danger-border:  rgba(239, 68, 68, 0.22);
 
   /* ── Typography ── */
   --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
   --font-mono: 'JetBrains Mono', monospace;
+
+  --font-size-xs:   11px;
+  --font-size-sm:   12px;
+  --font-size-base: 13px;
+  --font-size-md:   14px;
+  --font-size-lg:   16px;
+  --font-size-xl:   20px;
+  --font-size-2xl:  24px;
+  --font-size-3xl:  32px;
 
   /* ── Radius ── */
   --radius-sm: 6px;
@@ -34,13 +50,21 @@
   --radius-xl: 20px;
 
   /* ── Shadows ── */
-  --shadow-sm:  0 1px 3px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
-  --shadow-md:  0 4px 16px rgba(0,0,0,0.4);
-  --shadow-lg:  0 8px 32px rgba(0,0,0,0.5);
-  --shadow-glow: 0 0 0 1px rgba(108, 92, 231, 0.3), 0 4px 20px rgba(108, 92, 231, 0.15);
+  --shadow-xs:   0 1px 2px rgba(0,0,0,0.25);
+  --shadow-sm:   0 1px 4px rgba(0,0,0,0.3), 0 1px 2px rgba(0,0,0,0.2);
+  --shadow-md:   0 4px 16px rgba(0,0,0,0.4);
+  --shadow-lg:   0 8px 32px rgba(0,0,0,0.5);
+  --shadow-glow: 0 0 0 1px rgba(108, 92, 231, 0.32), 0 4px 20px rgba(108, 92, 231, 0.18);
+  --shadow-focus: 0 0 0 3px rgba(108, 92, 231, 0.22);
+
+  /* ── Animation ── */
+  --duration-fast:   0.10s;
+  --duration-normal: 0.18s;
+  --duration-slow:   0.30s;
+  --ease:            cubic-bezier(0.4, 0, 0.2, 1);
 
   /* ── Layout ── */
-  --sidebar-width: 240px;
+  --sidebar-width: 256px;
 }
 
 *, *::before, *::after {
@@ -77,3 +101,16 @@ img, svg {
   display: block;
   max-width: 100%;
 }
+
+/* ── Global focus styles ── */
+:focus-visible {
+  outline: none;
+  box-shadow: var(--shadow-focus);
+  border-radius: var(--radius-sm);
+}
+
+/* ── Scrollbar ── */
+::-webkit-scrollbar       { width: 6px; height: 6px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.10); border-radius: 99px; }
+::-webkit-scrollbar-thumb:hover { background: rgba(255,255,255,0.18); }

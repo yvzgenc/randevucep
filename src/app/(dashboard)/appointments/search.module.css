@@ -16,10 +16,10 @@
 
 .searchIcon {
   position: absolute;
-  left: 11px;
-  font-size: 14px;
+  left: 12px;
+  font-size: 13px;
   pointer-events: none;
-  opacity: .5;
+  opacity: .45;
 }
 
 .searchInput {
@@ -29,18 +29,24 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
   color: var(--color-text);
-  font-size: 13px;
+  font-size: var(--font-size-base);
   font-family: inherit;
-  transition: border-color .15s, box-shadow .15s;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast), background var(--duration-fast);
+}
+
+.searchInput:hover {
+  border-color: var(--color-border-h);
+  background: var(--color-surface-2);
 }
 
 .searchInput:focus {
   outline: none;
   border-color: var(--color-accent);
-  box-shadow: 0 0 0 3px rgba(108,92,231,.12);
+  box-shadow: var(--shadow-focus);
+  background: var(--color-surface);
 }
 
-.searchInput::placeholder { color: var(--color-muted); opacity: .6; }
+.searchInput::placeholder { color: var(--color-muted); opacity: .65; }
 
 .clearBtn {
   position: absolute;
@@ -48,15 +54,15 @@
   background: none;
   border: none;
   color: var(--color-muted);
-  font-size: 13px;
+  font-size: 12px;
   cursor: pointer;
   padding: 4px 6px;
   border-radius: var(--radius-sm);
   line-height: 1;
-  transition: color .15s, background .15s;
+  transition: color var(--duration-fast), background var(--duration-fast);
 }
 
-.clearBtn:hover { color: var(--color-text); background: rgba(255,255,255,.06); }
+.clearBtn:hover { color: var(--color-text); background: rgba(255,255,255,.07); }
 
 /* ── Filter toggle button ── */
 .filterToggle {
@@ -67,32 +73,33 @@
   background: var(--color-surface);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   font-family: inherit;
   color: var(--color-muted);
   cursor: pointer;
   white-space: nowrap;
-  transition: border-color .15s, color .15s, background .15s;
+  transition: border-color var(--duration-fast), color var(--duration-fast), background var(--duration-fast);
   position: relative;
 }
 
 .filterToggle:hover {
-  color: var(--color-text);
+  color: var(--color-text-2);
   border-color: var(--color-border-h);
+  background: var(--color-surface-2);
 }
 
 .filterToggleActive {
   color: var(--color-accent-2);
-  border-color: var(--color-accent);
-  background: var(--color-accent-glow);
+  border-color: var(--color-accent-border);
+  background: var(--color-accent-muted);
 }
 
 .filterDot {
   width: 6px;
   height: 6px;
   border-radius: 50%;
-  background: var(--color-accent);
+  background: var(--color-accent-2);
   flex-shrink: 0;
 }
 
@@ -119,7 +126,7 @@
 }
 
 .filterLabel {
-  font-size: 11px;
+  font-size: var(--font-size-xs);
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: .4px;
@@ -132,10 +139,10 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   color: var(--color-text);
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-family: inherit;
   cursor: pointer;
-  transition: border-color .15s;
+  transition: border-color var(--duration-fast), box-shadow var(--duration-fast);
   appearance: none;
   -webkit-appearance: none;
 }
@@ -143,6 +150,7 @@
 .filterSelect:focus {
   outline: none;
   border-color: var(--color-accent);
+  box-shadow: var(--shadow-focus);
 }
 
 /* ── Clear all button ── */
@@ -154,23 +162,23 @@
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
   padding: 6px 12px;
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   font-weight: 600;
   font-family: inherit;
   color: var(--color-muted);
   cursor: pointer;
-  transition: color .15s, border-color .15s, background .15s;
+  transition: color var(--duration-fast), border-color var(--duration-fast), background var(--duration-fast);
 }
 
 .clearAllBtn:hover {
   color: var(--color-danger);
-  border-color: rgba(239,68,68,.3);
+  border-color: var(--color-danger-border);
   background: var(--color-danger-bg);
 }
 
 /* ── Result count ── */
 .resultCount {
-  font-size: 12px;
+  font-size: var(--font-size-sm);
   color: var(--color-muted);
   margin-bottom: 10px;
   padding: 0 2px;

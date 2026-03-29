@@ -7,6 +7,19 @@ import styles from './dashboard.module.css'
 
 export const metadata: Metadata = { title: 'Genel Bakış' }
 
+function getGreeting(): string {
+  const h = new Date().getHours()
+  if (h < 12) return 'Günaydın'
+  if (h < 18) return 'İyi günler'
+  return 'İyi akşamlar'
+}
+
+function getTodayLabel(): string {
+  return new Date().toLocaleDateString('tr-TR', {
+    weekday: 'long', day: 'numeric', month: 'long',
+  })
+}
+
 export default async function DashboardPage() {
   const supabase = await createServerSupabaseClient()
 
@@ -14,7 +27,6 @@ export default async function DashboardPage() {
   const user = authQuery.data.user
   if (!user) redirect('/login')
 
-  // Fetch business — query-object pattern
   const bizQuery = await supabase
     .from('businesses')
     .select('*')
@@ -58,10 +70,10 @@ export default async function DashboardPage() {
       {/* ── Page header ── */}
       <div className={styles.header}>
         <div>
-          <h1 className={styles.title}>Genel Bakış</h1>
-          <p className={styles.subtitle}>
-            Hoş geldiniz, <strong>{business.name}</strong>
-          </p>
+          <h1 className={styles.title}>
+            {getGreeting()}, <span className={styles.titleAccent}>{business.name}</span>
+          </h1>
+          <p className={styles.subtitle}>{getTodayLabel()}</p>
         </div>
         <a
           href={`/book/${business.slug}`}
@@ -69,17 +81,20 @@ export default async function DashboardPage() {
           rel="noreferrer"
           className={styles.bookingBadge}
         >
-          🔗 Rezervasyon Sayfam
+          <span>🔗</span> Rezervasyon Sayfam
         </a>
       </div>
 
       {/* ── Trial banner ── */}
       {trialActive && (
         <div className={styles.trialBanner}>
-          <span className={styles.trialText}>
-            🎉 Deneme sürümünüz — <strong>{trialDays} gün</strong> kaldı
-          </span>
-          <a href="/settings" className={styles.upgradeLink}>
+          <div className={styles.trialBannerLeft}>
+            <span className={styles.trialIcon}>🎉</span>
+            <span className={styles.trialText}>
+              Deneme sürümünüz — <strong>{trialDays} gün</strong> kaldı
+            </span>
+          </div>
+          <a href="/settings#plan" className={styles.upgradeLink}>
             Planı Yükselt →
           </a>
         </div>
@@ -93,7 +108,7 @@ export default async function DashboardPage() {
         </div>
       )}
 
-      {/* ── Bekleyen onay uyarısı ── */}
+      {/* ── Pending banner ── */}
       {pendingCount > 0 && (
         <a href="/appointments" className={styles.pendingBanner}>
           <span className={styles.pendingBannerDot} />
@@ -104,19 +119,37 @@ export default async function DashboardPage() {
         </a>
       )}
 
-      {/* ── Quick stat row ── */}
+      {/* ── Quick stat cards ── */}
       <div className={styles.statsGrid}>
-        <div className={styles.statCard}>
-          <p className={styles.statLabel}>Bugünkü Randevular</p>
+        <div className={`${styles.statCard} ${styles.statCardToday}`}>
+          <div className={styles.statCardTop}>
+            <span className={styles.statIcon}>📅</span>
+            <p className={styles.statLabel}>Bugünkü Randevular</p>
+          </div>
           <p className={styles.statValue}>{todayCount}</p>
+          <p className={styles.statHint}>bugün</p>
         </div>
-        <div className={styles.statCard}>
-          <p className={styles.statLabel}>Onay Bekleyen</p>
-          <p className={pendingCount > 0 ? styles.statValueWarning : styles.statValue}>{pendingCount}</p>
+
+        <div className={`${styles.statCard} ${pendingCount > 0 ? styles.statCardWarn : ''}`}>
+          <div className={styles.statCardTop}>
+            <span className={styles.statIcon}>⏳</span>
+            <p className={styles.statLabel}>Onay Bekleyen</p>
+          </div>
+          <p className={pendingCount > 0 ? styles.statValueWarning : styles.statValue}>
+            {pendingCount}
+          </p>
+          <p className={styles.statHint}>{pendingCount > 0 ? 'onay gerekiyor' : 'bekleyen yok'}</p>
         </div>
-        <div className={styles.statCard}>
-          <p className={styles.statLabel}>Aktif Plan</p>
+
+        <div className={`${styles.statCard} ${styles.statCardPlan}`}>
+          <div className={styles.statCardTop}>
+            <span className={styles.statIcon}>✨</span>
+            <p className={styles.statLabel}>Aktif Plan</p>
+          </div>
           <p className={styles.statPlan}>{planConfig.label}</p>
+          <p className={styles.statHint}>
+            <a href="/settings" className={styles.statHintLink}>planı gör →</a>
+          </p>
         </div>
       </div>
 

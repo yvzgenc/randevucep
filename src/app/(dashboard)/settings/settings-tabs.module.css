@@ -1,7 +1,7 @@
-/* ── Tab bar ── */
+/* ── Settings tab bar ── */
 .tabBar {
   display: flex;
-  gap: 2px;
+  gap: 3px;
   background: var(--color-surface-2);
   border: 1px solid var(--color-border);
   border-radius: var(--radius-lg);
@@ -13,28 +13,29 @@
 .tab {
   flex: 1;
   padding: 9px 14px;
-  border-radius: 10px;
-  border: none;
+  border-radius: var(--radius-md);
+  border: 1px solid transparent;
   background: none;
   font-size: 12px;
   font-weight: 600;
   font-family: inherit;
   color: var(--color-muted);
   cursor: pointer;
-  transition: background .15s, color .15s;
+  transition: background var(--duration-fast), color var(--duration-fast);
   white-space: nowrap;
   text-align: center;
 }
 
 .tab:hover {
-  color: var(--color-text);
-  background: rgba(255,255,255,.04);
+  color: var(--color-text-2);
+  background: rgba(255,255,255,.05);
 }
 
 .tabActive {
-  background: var(--color-surface);
-  color: var(--color-text);
-  box-shadow: var(--shadow-sm);
+  background: linear-gradient(135deg, rgba(108, 92, 231, 0.2), rgba(108, 92, 231, 0.07));
+  color: var(--color-accent-2);
+  border-color: var(--color-accent-border);
+  box-shadow: 0 1px 4px rgba(0,0,0,0.25), 0 0 0 1px rgba(108, 92, 231, 0.12);
 }
 
 /* ── Panel ── */
