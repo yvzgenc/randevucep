@@ -1,7 +1,6 @@
 // ─── Upcoming reminder cron job ───────────────────────────────────────────────
-// Finds appointments scheduled for tomorrow, sends reminder via email
-// AND optionally SMS/WhatsApp if business_settings enables it.
-//
+// Runs every 2 hours. For each appointment without reminder_sent_at, checks
+// whether (appointment_datetime - now) ≈ business's reminder_hours_before (±1h).
 // Idempotency: reminder_sent_at claimed atomically — safe to run concurrently.
 
 import { NextRequest, NextResponse }        from 'next/server'
@@ -33,7 +32,10 @@ interface BizSettings {
   sms_notifications_enabled:      boolean
   whatsapp_notifications_enabled: boolean
   sms_reminder_enabled:           boolean
+  reminder_hours_before:          number
 }
+
+const WINDOW_HOURS = 1  // ±1h tolerance around the target send time
 
 function createServiceClient() {
   const url = process.env.NEXT_PUBLIC_SUPABASE_URL
@@ -63,12 +65,13 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   const supabase = createServiceClient()
+  const now = new Date()
 
-  const tomorrow = new Date()
-  tomorrow.setUTCDate(tomorrow.getUTCDate() + 1)
-  const tomorrowStr = tomorrow.toISOString().split('T')[0]
+  // Fetch appointments in [today, 3 days out] that haven't been reminded yet
+  const todayStr   = now.toISOString().split('T')[0]
+  const maxDate    = new Date(now.getTime() + 3 * 24 * 3600 * 1000)
+  const maxDateStr = maxDate.toISOString().split('T')[0]
 
-  // Fetch eligible appointments (include business_id for settings lookup)
   const { data: rawRows, error: fetchErr } = await supabase
     .from('appointments')
     .select(`
@@ -84,7 +87,8 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       appointment_time,
       businesses ( name, slug, phone )
     `)
-    .eq('appointment_date', tomorrowStr)
+    .gte('appointment_date', todayStr)
+    .lte('appointment_date', maxDateStr)
     .is('reminder_sent_at', null)
     .not('customer_email', 'is', null)
     .not('status', 'in', '("İptal","Tamamlandı","Gelmedi")')
@@ -94,23 +98,23 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     return NextResponse.json({ error: fetchErr.message }, { status: 500 })
   }
 
-  const appointments = (rawRows ?? []) as unknown as (ReminderRow & { business_id: number | null })[]
+  const appointments = (rawRows ?? []) as unknown as ReminderRow[]
   const results = { sent: 0, skipped: 0, failed: 0 }
 
-  // Cache business settings per business_id to avoid repeated queries
   const settingsCache = new Map<number, BizSettings>()
 
   async function getSettings(bizId: number): Promise<BizSettings> {
     if (settingsCache.has(bizId)) return settingsCache.get(bizId)!
     const q = await supabase
       .from('business_settings')
-      .select('sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled')
+      .select('sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled, reminder_hours_before')
       .eq('business_id', bizId)
       .maybeSingle()
     const row: BizSettings = {
       sms_notifications_enabled:      q.data?.sms_notifications_enabled      ?? false,
       whatsapp_notifications_enabled: q.data?.whatsapp_notifications_enabled ?? false,
       sms_reminder_enabled:           q.data?.sms_reminder_enabled           ?? false,
+      reminder_hours_before:          q.data?.reminder_hours_before ?? 24,
     }
     settingsCache.set(bizId, row)
     return row
@@ -123,11 +127,20 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
     const biz = getBiz(appt.businesses)
     if (!biz) { results.skipped++; continue }
 
+    const bizId    = appt.business_id
+    const settings = bizId != null ? await getSettings(bizId) : null
+
+    // ── Check timing window ───────────────────────────────────────────────────
+    const reminderHours = settings?.reminder_hours_before ?? 24
+    const apptDatetime  = new Date(`${appt.appointment_date}T${appt.appointment_time}:00`)
+    const diffHours     = (apptDatetime.getTime() - now.getTime()) / 3_600_000
+
+    if (Math.abs(diffHours - reminderHours) > WINDOW_HOURS) continue
+
     // ── Atomic claim ──────────────────────────────────────────────────────────
-    const now = new Date().toISOString()
     const { data: claimed, error: claimErr } = await supabase
       .from('appointments')
-      .update({ reminder_sent_at: now })
+      .update({ reminder_sent_at: new Date().toISOString() })
       .eq('id', appt.id)
       .is('reminder_sent_at', null)
       .select('id')
@@ -137,10 +150,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       continue
     }
 
-    // ── Fetch SMS settings ────────────────────────────────────────────────────
-    const bizId    = appt.business_id
-    const settings = bizId != null ? await getSettings(bizId) : null
-
+    // ── Build SMS config ──────────────────────────────────────────────────────
     const smsConfig = settings?.sms_reminder_enabled
       ? {
           smsEnabled:      settings.sms_notifications_enabled,
@@ -188,11 +198,11 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
   }
 
   console.info(
-    `[reminders] Complete date=${tomorrowStr}`,
+    `[reminders] Complete now=${now.toISOString()}`,
     `sent=${results.sent} skipped=${results.skipped} failed=${results.failed}`
   )
 
-  return NextResponse.json({ ok: true, date: tomorrowStr, ...results })
+  return NextResponse.json({ ok: true, ...results })
 }
 
 export async function GET(req: NextRequest): Promise<NextResponse> {

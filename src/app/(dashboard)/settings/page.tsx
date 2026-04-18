@@ -42,7 +42,7 @@ export default async function SettingsPage() {
 
   const settingsQuery = await supabase
     .from('business_settings')
-    .select('opening_time, closing_time, slot_minutes, sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled')
+    .select('opening_time, closing_time, slot_minutes, sms_notifications_enabled, whatsapp_notifications_enabled, sms_reminder_enabled, reminder_hours_before')
     .eq('business_id', business.id)
     .maybeSingle()
 
@@ -112,6 +112,7 @@ export default async function SettingsPage() {
               smsEnabled={smsRow?.sms_notifications_enabled ?? false}
               whatsappEnabled={smsRow?.whatsapp_notifications_enabled ?? false}
               smsReminderEnabled={smsRow?.sms_reminder_enabled ?? false}
+              reminderHoursBefore={smsRow?.reminder_hours_before ?? 24}
               twilioConfigured={twilioConfigured}
             />
           ),

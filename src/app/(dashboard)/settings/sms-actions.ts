@@ -3,10 +3,11 @@
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 
 interface SaveSmsSettingsInput {
-  businessId:         number
-  smsEnabled:         boolean
-  whatsappEnabled:    boolean
-  smsReminderEnabled: boolean
+  businessId:           number
+  smsEnabled:           boolean
+  whatsappEnabled:      boolean
+  smsReminderEnabled:   boolean
+  reminderHoursBefore:  number
 }
 
 export async function saveSmsSettings(
@@ -35,6 +36,7 @@ export async function saveSmsSettings(
         sms_notifications_enabled:      input.smsEnabled,
         whatsapp_notifications_enabled: input.whatsappEnabled,
         sms_reminder_enabled:           input.smsReminderEnabled,
+        reminder_hours_before:          input.reminderHoursBefore,
       },
       { onConflict: 'business_id' }
     )

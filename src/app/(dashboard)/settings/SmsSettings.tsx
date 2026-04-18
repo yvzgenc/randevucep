@@ -5,12 +5,21 @@ import { saveSmsSettings } from './sms-actions'
 import styles from './settings.module.css'
 import smsStyles from './sms.module.css'
 
+const REMINDER_HOUR_OPTIONS = [
+  { value: 2,  label: '2 saat önce'        },
+  { value: 4,  label: '4 saat önce'        },
+  { value: 12, label: '12 saat önce'       },
+  { value: 24, label: '24 saat önce (1 gün)' },
+  { value: 48, label: '48 saat önce (2 gün)' },
+]
+
 interface Props {
-  businessId:      number
-  smsEnabled:      boolean
-  whatsappEnabled: boolean
-  smsReminderEnabled: boolean
-  twilioConfigured: boolean   // true if env vars are set (server checks)
+  businessId:           number
+  smsEnabled:           boolean
+  whatsappEnabled:      boolean
+  smsReminderEnabled:   boolean
+  reminderHoursBefore:  number
+  twilioConfigured:     boolean
 }
 
 export function SmsSettings({
@@ -18,14 +27,16 @@ export function SmsSettings({
   smsEnabled,
   whatsappEnabled,
   smsReminderEnabled,
+  reminderHoursBefore,
   twilioConfigured,
 }: Props) {
-  const [sms,        setSms]      = useState(smsEnabled)
-  const [whatsapp,   setWhatsapp] = useState(whatsappEnabled)
-  const [reminder,   setReminder] = useState(smsReminderEnabled)
-  const [saved,      setSaved]    = useState(false)
-  const [error,      setError]    = useState<string | null>(null)
-  const [pending,    startTransition] = useTransition()
+  const [sms,          setSms]        = useState(smsEnabled)
+  const [whatsapp,     setWhatsapp]   = useState(whatsappEnabled)
+  const [reminder,     setReminder]   = useState(smsReminderEnabled)
+  const [reminderHours, setReminderHours] = useState(reminderHoursBefore)
+  const [saved,        setSaved]      = useState(false)
+  const [error,        setError]      = useState<string | null>(null)
+  const [pending,      startTransition] = useTransition()
 
   function handleSave() {
     setError(null)
@@ -33,9 +44,10 @@ export function SmsSettings({
     startTransition(async () => {
       const result = await saveSmsSettings({
         businessId,
-        smsEnabled:      sms,
-        whatsappEnabled: whatsapp,
-        smsReminderEnabled: reminder,
+        smsEnabled:          sms,
+        whatsappEnabled:     whatsapp,
+        smsReminderEnabled:  reminder,
+        reminderHoursBefore: reminderHours,
       })
       if (result.error) {
         setError(result.error)
@@ -108,7 +120,7 @@ export function SmsSettings({
           <div className={smsStyles.toggleInfo}>
             <p className={smsStyles.toggleTitle}>⏰ SMS hatırlatma</p>
             <p className={smsStyles.toggleDesc}>
-              Günlük cron işi çalıştığında müşterilere e-posta yanı sıra SMS/WhatsApp hatırlatması da gider.
+              Randevudan belirtilen süre önce müşterilere SMS/WhatsApp hatırlatması gönderilir.
             </p>
           </div>
           <button
@@ -122,6 +134,25 @@ export function SmsSettings({
             <span className={smsStyles.toggleThumb} />
           </button>
         </label>
+
+        {reminder && (
+          <div className={smsStyles.reminderHoursRow}>
+            <label className={smsStyles.reminderHoursLabel} htmlFor="reminder-hours">
+              Hatırlatma zamanı
+            </label>
+            <select
+              id="reminder-hours"
+              className={smsStyles.reminderHoursSelect}
+              value={reminderHours}
+              onChange={(e) => setReminderHours(Number(e.target.value))}
+              disabled={!twilioConfigured}
+            >
+              {REMINDER_HOUR_OPTIONS.map(opt => (
+                <option key={opt.value} value={opt.value}>{opt.label}</option>
+              ))}
+            </select>
+          </div>
+        )}
       </div>
 
       {/* Save */}

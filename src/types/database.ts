@@ -156,6 +156,7 @@ export type Database = {
           sms_notifications_enabled:      boolean
           whatsapp_notifications_enabled: boolean
           sms_reminder_enabled:           boolean
+          reminder_hours_before:          number
         }
         Insert: {
           business_id:                    number
@@ -167,6 +168,7 @@ export type Database = {
           sms_notifications_enabled?:     boolean
           whatsapp_notifications_enabled?: boolean
           sms_reminder_enabled?:          boolean
+          reminder_hours_before?:         number
         }
         Update: {
           business_id?:                   number
@@ -178,6 +180,7 @@ export type Database = {
           sms_notifications_enabled?:     boolean
           whatsapp_notifications_enabled?: boolean
           sms_reminder_enabled?:          boolean
+          reminder_hours_before?:         number
         }
         Relationships: [
           {
