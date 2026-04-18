@@ -5,6 +5,7 @@ import type { Appointment, Service, StaffMember } from '@/types/database'
 import { CalendarView }          from './CalendarView'
 import { AppointmentActions }    from './AppointmentActions'
 import { AddAppointmentModal }   from './AddAppointmentModal'
+import { NoteEditor }            from './NoteEditor'
 import calStyles  from './calendar.module.css'
 import styles     from './appointments.module.css'
 import tabStyles  from './appt-tabs.module.css'
@@ -307,6 +308,7 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
               <span>Hizmet</span>
               <span>Personel</span>
               <span>Durum</span>
+              <span>Not</span>
               <span></span>
             </div>
             {filtered.map((appt) => (
@@ -329,6 +331,12 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
                   <span className={statusBadgeCls(appt.status)}>
                     {appt.status ?? 'Bekliyor'}
                   </span>
+                </span>
+                <span>
+                  <NoteEditor
+                    appointmentId={appt.id}
+                    initialNote={appt.notes ?? null}
+                  />
                 </span>
                 <span>
                   <AppointmentActions

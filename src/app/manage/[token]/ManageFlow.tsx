@@ -1,7 +1,7 @@
 'use client'
 
 import React, { useState, useMemo, useTransition } from 'react'
-import { cancelAppointment, rescheduleAppointment } from './actions'
+import { cancelAppointment, rescheduleAppointment, confirmAppointment } from './actions'
 import styles from './manage.module.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -31,18 +31,21 @@ interface ApptData {
 }
 
 interface Props {
-  token:       string
-  appt:        ApptData
-  bizName:     string
-  bizPhone:    string | null
-  bizSlug:     string
-  openingTime: string
-  closingTime: string
-  slotMinutes: number
-  busySlots:   BusySlot[]
+  token:           string
+  appt:            ApptData
+  bizName:         string
+  bizPhone:        string | null
+  bizSlug:         string
+  openingTime:     string
+  closingTime:     string
+  smsEnabled:      boolean
+  whatsappEnabled: boolean
+  slotMinutes:     number
+  busySlots:       BusySlot[]
 }
 
 type View = 'detail' | 'reschedule' | 'done'
+type DoneAction = 'canceled' | 'rescheduled' | 'confirmed'
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
@@ -142,10 +145,11 @@ function SummaryCard({ appt, bizName }: { appt: ApptData; bizName: string }) {
 export function ManageFlow({
   token, appt, bizName, bizPhone, bizSlug,
   openingTime, closingTime, slotMinutes, busySlots,
+  smsEnabled, whatsappEnabled,
 }: Props) {
   const [view,       setView]       = useState<View>('detail')
   const [doneMsg,    setDoneMsg]    = useState('')
-  const [doneAction, setDoneAction] = useState<'canceled' | 'rescheduled'>('canceled')
+  const [doneAction, setDoneAction] = useState<DoneAction>('canceled')
   const [error,      setError]      = useState<string | null>(null)
   const [showCancel, setShowCancel] = useState(false)
   const [pending,    startTransition] = useTransition()
@@ -172,19 +176,46 @@ export function ManageFlow({
   const past     = isPast(appt.appointment_date, appt.appointment_time)
   const canAct   = !terminal && !past
 
+  // ── Confirm ───────────────────────────────────────────────────────────────
+  function handleConfirm() {
+    setError(null)
+    startTransition(async () => {
+      const res = await confirmAppointment({
+        token,
+        customerName:    appt.customer_name,
+        customerEmail:   appt.customer_email,
+        customerPhone:   appt.customer_phone,
+        bizName,
+        bizPhone,
+        serviceName:     appt.service_name,
+        apptDate:        fmtDate(appt.appointment_date),
+        apptTime:        appt.appointment_time,
+        smsEnabled,
+        whatsappEnabled,
+      })
+      if (!res.ok) { setError(res.error ?? 'Onaylama sırasında hata oluştu.'); return }
+      setDoneAction('confirmed')
+      setDoneMsg('Randevunuz onaylandı. Sizi bekliyoruz!')
+      setView('done')
+    })
+  }
+
   // ── Cancel ────────────────────────────────────────────────────────────────
   function handleCancel() {
     setError(null)
     startTransition(async () => {
       const res = await cancelAppointment({
         token,
-        customerName:  appt.customer_name,
-        customerEmail: appt.customer_email,
+        customerName:    appt.customer_name,
+        customerEmail:   appt.customer_email,
+        customerPhone:   appt.customer_phone,
         bizName,
         bizPhone,
-        serviceName:   appt.service_name,
-        apptDate:      fmtDate(appt.appointment_date),
-        apptTime:      appt.appointment_time,
+        serviceName:     appt.service_name,
+        apptDate:        fmtDate(appt.appointment_date),
+        apptTime:        appt.appointment_time,
+        smsEnabled,
+        whatsappEnabled,
       })
       if (!res.ok) { setError(res.error ?? 'İptal sırasında hata oluştu.'); return }
       setDoneAction('canceled')
@@ -217,13 +248,18 @@ export function ManageFlow({
 
   // ── Done screen ───────────────────────────────────────────────────────────
   if (view === 'done') {
-    const icon = doneAction === 'canceled' ? '✕' : '✓'
+    const icon    = doneAction === 'canceled' ? '✕' : '✓'
     const iconCls = doneAction === 'canceled' ? styles.doneIconCancel : styles.doneIconOk
+    const title   = doneAction === 'canceled'
+      ? 'Randevu İptal Edildi'
+      : doneAction === 'confirmed'
+        ? 'Randevu Onaylandı'
+        : 'Randevu Değiştirildi'
     return (
       <div className={styles.doneWrap}>
         <div className={`${styles.doneIcon} ${iconCls}`}>{icon}</div>
         <h2 className={styles.doneTitle}>
-          {doneAction === 'canceled' ? 'Randevu İptal Edildi' : 'Randevu Değiştirildi'}
+          {title}
         </h2>
         <p className={styles.doneMsg}>{doneMsg}</p>
         {appt.customer_email && (
@@ -334,6 +370,16 @@ export function ManageFlow({
       {/* Action buttons */}
       {canAct && (
         <div className={styles.actions}>
+          {appt.status === 'Bekliyor' && (
+            <button
+              className={styles.confirmBtn}
+              onClick={handleConfirm}
+              disabled={pending}
+            >
+              {pending ? 'Onaylanıyor…' : '✓ Randevuyu Onayla'}
+            </button>
+          )}
+
           <button
             className={styles.rescheduleBtn}
             onClick={() => { setView('reschedule'); setError(null) }}

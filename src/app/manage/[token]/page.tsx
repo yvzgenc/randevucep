@@ -36,10 +36,10 @@ export default async function ManagePage({ params }: Props) {
     .eq('id', appt.business_id ?? -1)
     .maybeSingle()
 
-  // Fetch settings for slot config
+  // Fetch settings for slot config + SMS channels
   const settQ = await supabase
     .from('business_settings')
-    .select('opening_time, closing_time, slot_minutes')
+    .select('opening_time, closing_time, slot_minutes, sms_notifications_enabled, whatsapp_notifications_enabled')
     .eq('business_id', appt.business_id ?? -1)
     .maybeSingle()
 
@@ -56,8 +56,8 @@ export default async function ManagePage({ params }: Props) {
     .gte('appointment_date', today)
     .lte('appointment_date', future)
 
-  const biz      = bizQ.data
-  const settings = settQ.data ?? { opening_time: '09:00', closing_time: '18:00', slot_minutes: 30 }
+  const biz       = bizQ.data
+  const settings  = settQ.data ?? { opening_time: '09:00', closing_time: '18:00', slot_minutes: 30, sms_notifications_enabled: false, whatsapp_notifications_enabled: false }
   const busySlots = busyQ.data ?? []
 
   return (
@@ -83,6 +83,8 @@ export default async function ManagePage({ params }: Props) {
           closingTime={settings.closing_time}
           slotMinutes={settings.slot_minutes}
           busySlots={busySlots}
+          smsEnabled={settings.sms_notifications_enabled ?? false}
+          whatsappEnabled={settings.whatsapp_notifications_enabled ?? false}
         />
       </main>
 

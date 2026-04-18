@@ -1,7 +1,24 @@
 {
   "permissions": {
     "allow": [
-      "Bash(npx tsc:*)"
+      "Bash(npx tsc:*)",
+      "Bash(ls d:/sc/src/app/\\\\\\(dashboard\\\\\\))",
+      "Bash(git -C d:/sc log --oneline -15)",
+      "Bash(ls d:/sc/src/app/\\\\\\(dashboard\\\\\\)/appointments)",
+      "Bash(ls d:/sc/src/app/\\\\\\(dashboard\\\\\\)/customers)",
+      "Bash(ls d:/sc/src/app/\\\\\\(dashboard\\\\\\)/services)",
+      "Bash(ls d:/sc/src/app/\\\\\\(dashboard\\\\\\)/staff)",
+      "Bash(ls d:/sc/src/app/\\\\\\(dashboard\\\\\\)/settings)",
+      "Bash(cat d:/sc/src/app/manage/[token]/page.tsx)",
+      "Bash(cat d:/sc/src/app/\\\\\\(dashboard\\\\\\)/appointments/actions.ts)",
+      "Bash(cat d:/sc/src/app/manage/[token]/ManageFlow.tsx)",
+      "Bash(cat d:/sc/src/app/manage/[token]/actions.ts)",
+      "mcp__claude_ai_Supabase__list_projects",
+      "mcp__claude_ai_Supabase__apply_migration",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "WebFetch(domain:github.com)",
+      "Bash(git clone:*)",
+      "Bash(cat ~/.claude/plugins/marketplaces/claude-plugins-official/external_plugins/github/*.json)"
     ]
   }
 }

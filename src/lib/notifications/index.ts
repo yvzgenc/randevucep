@@ -145,6 +145,26 @@ export async function notifyStatusChange(opts: {
   })
 }
 
+export async function notifyStatusChangeMulti(opts: {
+  event:         'booking_confirmed' | 'booking_canceled'
+  customerEmail: string
+  customerName:  string
+  data:          NotificationData
+  sms?:          SmsChannelConfig
+}): Promise<void> {
+  const tasks: Promise<unknown>[] = [
+    sendNotification({
+      event:   opts.event,
+      channel: 'email',
+      to:      opts.customerEmail,
+      toName:  opts.customerName,
+      data:    opts.data,
+    }),
+  ]
+  pushSmsTask(tasks, opts.event, opts.sms, opts.data)
+  await Promise.allSettled(tasks)
+}
+
 export async function notifyUpcomingReminder(opts: {
   customerEmail: string
   customerName:  string
@@ -162,6 +182,22 @@ export async function notifyUpcomingReminder(opts: {
 // ─── SMS / WhatsApp dispatch ──────────────────────────────────────────────────
 
 import { TwilioSmsProvider, TwilioWhatsAppProvider, normalisePhone } from './providers/twilio'
+
+/** Push an SMS or WhatsApp task onto the tasks array if the channel is enabled. */
+function pushSmsTask(
+  tasks:   Promise<unknown>[],
+  event:   import('./types').NotificationEvent,
+  sms:     SmsChannelConfig | undefined,
+  data:    import('./types').NotificationData,
+): void {
+  const phone = sms?.customerPhone?.trim()
+  if (!phone || phone.length < 10) return
+  if (sms?.whatsappEnabled) {
+    tasks.push(sendSmsNotification({ event, channel: 'whatsapp', to: phone, data }))
+  } else if (sms?.smsEnabled) {
+    tasks.push(sendSmsNotification({ event, channel: 'sms', to: phone, data }))
+  }
+}
 import { renderSmsTemplate } from './templates'
 import type { SmsProvider } from './types'
 
@@ -246,25 +282,7 @@ export async function notifyBookingCreatedMulti(opts: {
     }))
   }
 
-  const phone = opts.sms?.customerPhone?.trim()
-  if (phone && phone.length >= 10) {
-    if (opts.sms?.whatsappEnabled) {
-      tasks.push(sendSmsNotification({
-        event:   'booking_created_customer',
-        channel: 'whatsapp',
-        to:      phone,
-        data:    opts.data,
-      }))
-    } else if (opts.sms?.smsEnabled) {
-      tasks.push(sendSmsNotification({
-        event:   'booking_created_customer',
-        channel: 'sms',
-        to:      phone,
-        data:    opts.data,
-      }))
-    }
-  }
-
+  pushSmsTask(tasks, 'booking_created_customer', opts.sms, opts.data)
   await Promise.allSettled(tasks)
 }
 
@@ -286,25 +304,7 @@ export async function notifyUpcomingReminderMulti(opts: {
       data:    opts.data,
     }),
   ]
-
-  const phone = opts.sms?.customerPhone?.trim()
-  if (phone && phone.length >= 10) {
-    if (opts.sms?.whatsappEnabled) {
-      tasks.push(sendSmsNotification({
-        event:   'upcoming_reminder',
-        channel: 'whatsapp',
-        to:      phone,
-        data:    opts.data,
-      }))
-    } else if (opts.sms?.smsEnabled) {
-      tasks.push(sendSmsNotification({
-        event:   'upcoming_reminder',
-        channel: 'sms',
-        to:      phone,
-        data:    opts.data,
-      }))
-    }
-  }
+  pushSmsTask(tasks, 'upcoming_reminder', opts.sms, opts.data)
 
   const results = await Promise.allSettled(tasks)
   // Return the email result as primary

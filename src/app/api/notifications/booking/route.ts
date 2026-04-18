@@ -90,6 +90,9 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
       weekday: 'long', year: 'numeric', month: 'long', day: 'numeric',
     })
 
+    const baseUrl   = process.env.NEXT_PUBLIC_APP_URL ?? ''
+    const manageUrl = appt.cancel_token ? `${baseUrl}/manage/${appt.cancel_token}` : undefined
+
     await notifyBookingCreated({
       customerEmail: trimEmail,
       customerName:  appt.customer_name,
@@ -105,6 +108,7 @@ export async function POST(req: NextRequest): Promise<NextResponse> {
         appointmentDate,
         appointmentTime: appt.appointment_time,
         appointmentId:   appt.id,
+        manageUrl,
       },
     })
   } catch (err) {

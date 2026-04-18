@@ -210,7 +210,9 @@ export function renderSmsTemplate(
   switch (event) {
     case 'booking_created_customer':
       return {
-        body: `📅 Randevunuz alındı!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal için: ${data.businessPhone ?? biz + "'i arayın"}`,
+        body: data.manageUrl
+          ? `📅 Randevunuz alındı!\n\n${biz}\n${svc}\n${date} – ${time}\n\nOnaylamak veya iptal etmek için:\n${data.manageUrl}`
+          : `📅 Randevunuz alındı!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal için: ${data.businessPhone ?? biz + "'i arayın"}`,
       }
 
     case 'booking_created_business':
@@ -220,7 +222,9 @@ export function renderSmsTemplate(
 
     case 'booking_confirmed':
       return {
-        body: `✅ Randevunuz onaylandı!\n\n${biz}\n${svc} – ${date} ${time}\n\nSizi bekliyoruz!`,
+        body: data.manageUrl
+          ? `✅ Randevunuz onaylandı!\n\n${biz}\n${svc} – ${date} ${time}\n\nSizi bekliyoruz!\n\nYönet: ${data.manageUrl}`
+          : `✅ Randevunuz onaylandı!\n\n${biz}\n${svc} – ${date} ${time}\n\nSizi bekliyoruz!`,
       }
 
     case 'booking_canceled':
@@ -230,7 +234,9 @@ export function renderSmsTemplate(
 
     case 'upcoming_reminder':
       return {
-        body: `⏰ Yarınki randevu hatırlatması!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal için lütfen öncesinden ${data.businessPhone ?? 'işletmeyi'} arayın.`,
+        body: data.manageUrl
+          ? `⏰ Yarınki randevu hatırlatması!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal veya değişiklik için:\n${data.manageUrl}`
+          : `⏰ Yarınki randevu hatırlatması!\n\n${biz}\n${svc}\n${date} – ${time}\n\nİptal için lütfen öncesinden ${data.businessPhone ?? 'işletmeyi'} arayın.`,
       }
   }
 }
