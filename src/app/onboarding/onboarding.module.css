@@ -17,6 +17,9 @@
 }
 
 .logo {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 18px;
   font-weight: 700;
   color: var(--color-accent);
@@ -85,8 +88,8 @@
 }
 
 .typeIcon {
-  font-size: 24px;
-  line-height: 1;
+  display: inline-flex;
+  color: var(--color-accent);
 }
 
 .typeLabel {

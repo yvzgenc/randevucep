@@ -3,17 +3,22 @@
 import { usePathname, useRouter } from 'next/navigation'
 import Link from 'next/link'
 import { useState } from 'react'
+import {
+  LayoutDashboard, Calendar, Scissors, User, Users, Settings,
+  Link2, X, Menu,
+} from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/Icon'
 import type { Business } from '@/types/database'
 import styles from './Sidebar.module.css'
 
 const NAV_ITEMS = [
-  { href: '/dashboard',    label: 'Genel Bakış', icon: '◧'  },
-  { href: '/appointments', label: 'Randevular',   icon: '📅' },
-  { href: '/services',     label: 'Hizmetler',    icon: '✂'  },
-  { href: '/staff',        label: 'Personel',     icon: '👤' },
-  { href: '/customers',    label: 'Müşteriler',   icon: '👥' },
-  { href: '/settings',     label: 'Ayarlar',      icon: '⚙'  },
+  { href: '/dashboard',    label: 'Genel Bakış', icon: LayoutDashboard },
+  { href: '/appointments', label: 'Randevular',   icon: Calendar        },
+  { href: '/services',     label: 'Hizmetler',    icon: Scissors        },
+  { href: '/staff',        label: 'Personel',     icon: User            },
+  { href: '/customers',    label: 'Müşteriler',   icon: Users           },
+  { href: '/settings',     label: 'Ayarlar',      icon: Settings        },
 ]
 
 interface Props {
@@ -38,14 +43,14 @@ export function Sidebar({ business, userEmail }: Props) {
       {/* Mobile top bar */}
       <div className={styles.mobileBar}>
         <span className={styles.mobileLogo}>
-          <span>📅</span> RandevuCep
+          <Icon icon={Calendar} size="sm" /> RandevuCep
         </span>
         <button
           className={styles.menuBtn}
           onClick={() => setOpen((v: boolean) => !v)}
           aria-label="Menü"
         >
-          {open ? '✕' : '☰'}
+          <Icon icon={open ? X : Menu} size="sm" />
         </button>
       </div>
 
@@ -54,7 +59,7 @@ export function Sidebar({ business, userEmail }: Props) {
         {/* Brand */}
         <div className={styles.top}>
           <div className={styles.logo}>
-            <div className={styles.logoMark}>📅</div>
+            <div className={styles.logoMark}><Icon icon={Calendar} size="lg" /></div>
             <span className={styles.logoText}>RandevuCep</span>
           </div>
           <div className={styles.bizCard}>
@@ -74,7 +79,7 @@ export function Sidebar({ business, userEmail }: Props) {
                 className={`${styles.navItem} ${active ? styles.active : ''}`}
                 onClick={() => setOpen(false)}
               >
-                <span className={styles.icon}>{item.icon}</span>
+                <span className={styles.icon}><Icon icon={item.icon} size="sm" /></span>
                 {item.label}
               </Link>
             )
@@ -89,7 +94,7 @@ export function Sidebar({ business, userEmail }: Props) {
             rel="noreferrer"
             className={styles.bookingLink}
           >
-            🔗 Rezervasyon Sayfam
+            <Icon icon={Link2} size="xs" /> Rezervasyon Sayfam
           </a>
           <div className={styles.userRow}>
             <span className={styles.userEmail}>{userEmail}</span>

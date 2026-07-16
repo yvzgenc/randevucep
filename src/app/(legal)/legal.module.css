@@ -33,11 +33,11 @@
   width: 28px;
   height: 28px;
   background: var(--color-accent);
+  color: #fff;
   border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 14px;
 }
 
 .logoText {
@@ -176,7 +176,8 @@
 }
 
 .contactCardIcon {
-  font-size: 20px;
+  display: inline-flex;
+  color: var(--color-accent);
   margin-bottom: 10px;
 }
 

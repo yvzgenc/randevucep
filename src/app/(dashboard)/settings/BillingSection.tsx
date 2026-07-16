@@ -87,7 +87,7 @@ function SubscriptionCard({ sub, planName }: SubCardProps) {
     },
     {
       label: 'Online Rezervasyon',
-      value: cfg.online_booking_enabled ? '✓ Açık' : '✗ Kapalı',
+      value: cfg.online_booking_enabled ? 'Açık' : 'Kapalı',
     },
   ]
 

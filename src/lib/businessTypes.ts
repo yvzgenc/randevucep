@@ -1,6 +1,17 @@
 // ─── Business type definitions ────────────────────────────────────────────────
 // Single source of truth. Add new types here — the rest of the app adapts.
 
+import {
+  Scissors,
+  Sparkles,
+  Stethoscope,
+  Brain,
+  BookOpen,
+  PawPrint,
+  Briefcase,
+  type LucideIcon,
+} from 'lucide-react'
+
 export const BUSINESS_TYPES = [
   'barber',
   'beauty_salon',
@@ -18,8 +29,8 @@ export type BusinessType = (typeof BUSINESS_TYPES)[number]
 interface BusinessTypeConfig {
   /** Display name shown in onboarding / settings */
   label: string
-  /** Emoji used as a visual indicator */
-  icon: string
+  /** Icon used as a visual indicator — render via <Icon icon={cfg.icon} /> */
+  icon: LucideIcon
   /** What "services" are called for this business type */
   servicesLabel: string
   /** Singular form of a single service */
@@ -41,7 +52,7 @@ interface BusinessTypeConfig {
 const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   barber: {
     label:                  'Berber',
-    icon:                   '✂️',
+    icon:                   Scissors,
     servicesLabel:          'Hizmetler',
     serviceLabel:           'Hizmet',
     staffLabel:             'Berberler',
@@ -53,7 +64,7 @@ const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   },
   beauty_salon: {
     label:                  'Güzellik Salonu',
-    icon:                   '💅',
+    icon:                   Sparkles,
     servicesLabel:          'Hizmetler',
     serviceLabel:           'Hizmet',
     staffLabel:             'Personel',
@@ -65,7 +76,7 @@ const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   },
   dental_clinic: {
     label:                  'Diş Kliniği',
-    icon:                   '🦷',
+    icon:                   Stethoscope,
     servicesLabel:          'Tedaviler',
     serviceLabel:           'Tedavi',
     staffLabel:             'Doktorlar',
@@ -77,7 +88,7 @@ const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   },
   psychology: {
     label:                  'Psikoloji / Terapi',
-    icon:                   '🧠',
+    icon:                   Brain,
     servicesLabel:          'Seans Türleri',
     serviceLabel:           'Seans',
     staffLabel:             'Terapistler',
@@ -89,7 +100,7 @@ const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   },
   education: {
     label:                  'Eğitim / Kurs',
-    icon:                   '📚',
+    icon:                   BookOpen,
     servicesLabel:          'Kurslar',
     serviceLabel:           'Kurs',
     staffLabel:             'Eğitmenler',
@@ -101,7 +112,7 @@ const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   },
   veterinary: {
     label:                  'Veteriner',
-    icon:                   '🐾',
+    icon:                   PawPrint,
     servicesLabel:          'Hizmetler',
     serviceLabel:           'Hizmet',
     staffLabel:             'Veterinerler',
@@ -113,7 +124,7 @@ const CONFIG: Record<BusinessType, BusinessTypeConfig> = {
   },
   consulting: {
     label:                  'Danışmanlık',
-    icon:                   '💼',
+    icon:                   Briefcase,
     servicesLabel:          'Hizmetler',
     serviceLabel:           'Hizmet',
     staffLabel:             'Danışmanlar',

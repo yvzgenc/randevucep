@@ -1,7 +1,10 @@
 import type { Metadata }         from 'next'
 import { redirect }              from 'next/navigation'
+import { Link2, PartyPopper, AlertTriangle } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireOwnerBusiness }  from '@/lib/supabase/business'
 import { trialDaysRemaining, getPlanConfig } from '@/lib/plans'
+import { Icon }                  from '@/components/ui/Icon'
 import { AnalyticsSection }      from './AnalyticsSection'
 import { TodayList }             from './TodayList'
 import styles from './dashboard.module.css'
@@ -15,15 +18,7 @@ export default async function DashboardPage() {
   const user = authQuery.data.user
   if (!user) redirect('/login')
 
-  // Fetch business — query-object pattern
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('*')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (bizQuery.error || !bizQuery.data) redirect('/onboarding')
-  const business = bizQuery.data
+  const business = await requireOwnerBusiness(supabase, user.id)
 
   const today = new Date().toISOString().split('T')[0]
 
@@ -77,7 +72,7 @@ export default async function DashboardPage() {
           rel="noreferrer"
           className={styles.bookingBadge}
         >
-          🔗 Rezervasyon Sayfam
+          <Icon icon={Link2} size="sm" /> Rezervasyon Sayfam
         </a>
       </div>
 
@@ -85,7 +80,7 @@ export default async function DashboardPage() {
       {trialActive && (
         <div className={styles.trialBanner}>
           <span className={styles.trialText}>
-            🎉 Deneme sürümünüz — <strong>{trialDays} gün</strong> kaldı
+            <Icon icon={PartyPopper} size="sm" /> Deneme sürümünüz — <strong>{trialDays} gün</strong> kaldı
           </span>
           <a href="/settings" className={styles.upgradeLink}>
             Planı Yükselt →
@@ -96,7 +91,7 @@ export default async function DashboardPage() {
       {/* ── Expired trial ── */}
       {!trialActive && trialDays === 0 && (
         <div className={styles.trialExpired}>
-          <span>⚠️ Deneme süreniz doldu. Hizmetlerinizi korumak için bir plan seçin.</span>
+          <span><Icon icon={AlertTriangle} size="sm" /> Deneme süreniz doldu. Hizmetlerinizi korumak için bir plan seçin.</span>
           <a href="/settings" className={styles.upgradeLink}>Planı Seç →</a>
         </div>
       )}

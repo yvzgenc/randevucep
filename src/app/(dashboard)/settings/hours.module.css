@@ -155,7 +155,7 @@
 .saveBtn:disabled { opacity: .5; cursor: not-allowed; }
 
 .errorMsg   { font-size: 12px; color: var(--color-danger); }
-.successMsg { font-size: 12px; color: var(--color-success); font-weight: 600; }
+.successMsg { display: inline-flex; align-items: center; gap: 4px; font-size: 12px; color: var(--color-success); font-weight: 600; }
 
 /* ── Closures section ── */
 .closuresSection {

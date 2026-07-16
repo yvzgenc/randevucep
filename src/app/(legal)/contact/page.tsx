@@ -1,4 +1,6 @@
 import type { Metadata } from 'next'
+import { Mail, Lock, CreditCard, Handshake } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import styles from '../legal.module.css'
 
 export const metadata: Metadata = {
@@ -20,7 +22,7 @@ export default function ContactPage() {
       {/* Contact method cards */}
       <div className={styles.contactGrid}>
         <div className={styles.contactCard}>
-          <div className={styles.contactCardIcon}>✉️</div>
+          <div className={styles.contactCardIcon}><Icon icon={Mail} size="xl" /></div>
           <p className={styles.contactCardTitle}>Genel Destek</p>
           <p className={styles.contactCardDesc}>
             Teknik sorular, hesap yönetimi ve platform kullanımına ilişkin konular için.
@@ -31,7 +33,7 @@ export default function ContactPage() {
         </div>
 
         <div className={styles.contactCard}>
-          <div className={styles.contactCardIcon}>🔒</div>
+          <div className={styles.contactCardIcon}><Icon icon={Lock} size="xl" /></div>
           <p className={styles.contactCardTitle}>KVKK / Veri Talebi</p>
           <p className={styles.contactCardDesc}>
             Kişisel verilerinize ilişkin talepler, KVKK başvuruları ve veri silme işlemleri için.
@@ -42,7 +44,7 @@ export default function ContactPage() {
         </div>
 
         <div className={styles.contactCard}>
-          <div className={styles.contactCardIcon}>💳</div>
+          <div className={styles.contactCardIcon}><Icon icon={CreditCard} size="xl" /></div>
           <p className={styles.contactCardTitle}>Ödeme ve Fatura</p>
           <p className={styles.contactCardDesc}>
             Abonelik, fatura ve ödeme işlemlerine ilişkin destek için.
@@ -53,7 +55,7 @@ export default function ContactPage() {
         </div>
 
         <div className={styles.contactCard}>
-          <div className={styles.contactCardIcon}>🤝</div>
+          <div className={styles.contactCardIcon}><Icon icon={Handshake} size="xl" /></div>
           <p className={styles.contactCardTitle}>İş Birliği</p>
           <p className={styles.contactCardDesc}>
             Kurumsal kullanım, entegrasyon ve iş ortaklığı konularında görüşmek için.

@@ -2,6 +2,7 @@
 
 import { headers }                     from 'next/headers'
 import { createServerSupabaseClient }   from '@/lib/supabase/server'
+import { getOwnerBusiness }             from '@/lib/supabase/business'
 import { getPaymentProvider, buildIdempotencyKey } from '@/lib/payments'
 import { PLANS, toPlanName }            from '@/lib/plans'
 
@@ -42,13 +43,8 @@ export async function startCheckout(
   const planConfig = PLANS[safePlan]
 
   // Fetch business
-  const { data: business, error: bizErr } = await supabase
-    .from('businesses')
-    .select('id, name, phone')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (bizErr || !business) {
+  const business = await getOwnerBusiness(supabase, user.id)
+  if (!business) {
     return { error: 'İşletme bulunamadı.' }
   }
 

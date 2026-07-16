@@ -21,7 +21,7 @@
 }
 
 .triggerDays { font-weight: 600; }
-.triggerArrow { font-size: 9px; opacity: .6; }
+.triggerArrow { display: inline-flex; opacity: .6; }
 
 /* ── Expanded panel ── */
 .panel {
@@ -96,4 +96,4 @@
 .saveBtn:disabled { opacity: .5; cursor: not-allowed; }
 
 .errorMsg   { font-size: 11px; color: var(--color-danger); }
-.successMsg { font-size: 11px; color: var(--color-success); font-weight: 600; }
+.successMsg { display: inline-flex; align-items: center; gap: 4px; font-size: 11px; color: var(--color-success); font-weight: 600; }

@@ -27,10 +27,10 @@
   height: 38px;
   border-radius: 10px;
   background: linear-gradient(135deg, var(--color-accent), var(--color-accent-2));
+  color: #fff;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 18px;
   flex-shrink: 0;
   box-shadow: var(--shadow-glow);
 }
@@ -49,6 +49,10 @@
 .main { flex: 1; padding-bottom: 48px; }
 
 .footer {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   padding: 20px 0;
   text-align: center;
   font-size: 12px;
@@ -122,7 +126,7 @@
   line-height: 1.5;
 }
 
-.statusBannerIcon { font-style: normal; flex-shrink: 0; }
+.statusBannerIcon { display: inline-flex; color: var(--color-accent-2); flex-shrink: 0; }
 
 /* ── Action buttons ── */
 .actions {
@@ -441,8 +445,6 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 28px;
-  font-weight: 700;
   margin-bottom: 20px;
 }
 

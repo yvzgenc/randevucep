@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState, useTransition, useRef, useEffect } from 'react'
+import { FileText, Pencil } from 'lucide-react'
 import { updateAppointmentNote } from './actions'
+import { Icon } from '@/components/ui/Icon'
 import styles from './appointments.module.css'
 
 interface Props {
@@ -60,7 +62,7 @@ export function NoteEditor({ appointmentId, initialNote }: Props) {
         title={hasNote ? saved : 'Not ekle'}
         aria-label="Not"
       >
-        {hasNote ? '📝' : '✎'}
+        <Icon icon={hasNote ? FileText : Pencil} size="sm" />
       </button>
 
       {open && (

@@ -4,8 +4,7 @@
 // Idempotency: reminder_sent_at claimed atomically — safe to run concurrently.
 
 import { NextRequest, NextResponse }        from 'next/server'
-import { createClient }                     from '@supabase/supabase-js'
-import type { Database }                    from '@/types/database'
+import { createServiceClient }              from '@/lib/supabase/service'
 import { notifyUpcomingReminderMulti }      from '@/lib/notifications'
 
 interface BusinessInfo {
@@ -36,13 +35,6 @@ interface BizSettings {
 }
 
 const WINDOW_HOURS = 1  // ±1h tolerance around the target send time
-
-function createServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) throw new Error('Supabase service client not configured')
-  return createClient<Database>(url, key, { auth: { persistSession: false } })
-}
 
 function verifySecret(req: NextRequest): boolean {
   const secret = process.env.CRON_SECRET

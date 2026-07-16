@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
+import { Check, X } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import type { BusinessHour, BusinessClosure } from '@/types/database'
 import { saveBusinessHours, addClosure, deleteClosure } from './hours-actions'
 import styles from './hours.module.css'
@@ -189,7 +191,7 @@ export function WorkingHours({ businessId, initialHours, initialClosures, defaul
       {/* ── Save row ── */}
       <div className={styles.saveRow}>
         {error  && <span className={styles.errorMsg}>{error}</span>}
-        {saved  && <span className={styles.successMsg}>✓ Kaydedildi</span>}
+        {saved  && <span className={styles.successMsg}><Icon icon={Check} size="xs" /> Kaydedildi</span>}
         <button className={styles.saveBtn} onClick={handleSave} disabled={pending}>
           {pending ? 'Kaydediliyor…' : 'Çalışma Saatlerini Kaydet'}
         </button>
@@ -217,7 +219,7 @@ export function WorkingHours({ businessId, initialHours, initialClosures, defaul
                   disabled={delPending}
                   aria-label="Sil"
                 >
-                  ✕
+                  <Icon icon={X} size="xs" />
                 </button>
               </div>
             ))}

@@ -1,7 +1,9 @@
 'use client'
 
 import React, { useState, useMemo, useTransition } from 'react'
+import { X, Check, Plus, Calendar, Info, type LucideIcon } from 'lucide-react'
 import { cancelAppointment, rescheduleAppointment, confirmAppointment } from './actions'
+import { Icon } from '@/components/ui/Icon'
 import styles from './manage.module.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -248,7 +250,7 @@ export function ManageFlow({
 
   // ── Done screen ───────────────────────────────────────────────────────────
   if (view === 'done') {
-    const icon    = doneAction === 'canceled' ? '✕' : '✓'
+    const doneIcon: LucideIcon = doneAction === 'canceled' ? X : Check
     const iconCls = doneAction === 'canceled' ? styles.doneIconCancel : styles.doneIconOk
     const title   = doneAction === 'canceled'
       ? 'Randevu İptal Edildi'
@@ -257,7 +259,7 @@ export function ManageFlow({
         : 'Randevu Değiştirildi'
     return (
       <div className={styles.doneWrap}>
-        <div className={`${styles.doneIcon} ${iconCls}`}>{icon}</div>
+        <div className={`${styles.doneIcon} ${iconCls}`}><Icon icon={doneIcon} size={28} /></div>
         <h2 className={styles.doneTitle}>
           {title}
         </h2>
@@ -269,7 +271,7 @@ export function ManageFlow({
         )}
         {bizSlug && (
           <a href={`/book/${bizSlug}`} className={styles.newBookingBtn}>
-            + Yeni Randevu Al
+            <Icon icon={Plus} size="sm" /> Yeni Randevu Al
           </a>
         )}
       </div>
@@ -354,13 +356,13 @@ export function ManageFlow({
       {/* Status badge if terminal/past */}
       {terminal && (
         <div className={styles.statusBanner}>
-          <span className={styles.statusBannerIcon}>ℹ</span>
+          <span className={styles.statusBannerIcon}><Icon icon={Info} size="sm" /></span>
           Bu randevu <strong>{appt.status}</strong> durumunda — değişiklik yapılamaz.
         </div>
       )}
       {!terminal && past && (
         <div className={styles.statusBanner}>
-          <span className={styles.statusBannerIcon}>ℹ</span>
+          <span className={styles.statusBannerIcon}><Icon icon={Info} size="sm" /></span>
           Bu randevu geçmişte kaldı — değişiklik yapılamaz.
         </div>
       )}
@@ -376,7 +378,7 @@ export function ManageFlow({
               onClick={handleConfirm}
               disabled={pending}
             >
-              {pending ? 'Onaylanıyor…' : '✓ Randevuyu Onayla'}
+              {pending ? 'Onaylanıyor…' : <><Icon icon={Check} size="sm" /> Randevuyu Onayla</>}
             </button>
           )}
 
@@ -385,7 +387,7 @@ export function ManageFlow({
             onClick={() => { setView('reschedule'); setError(null) }}
             disabled={pending}
           >
-            📅 Tarih / Saat Değiştir
+            <Icon icon={Calendar} size="sm" /> Tarih / Saat Değiştir
           </button>
 
           {!showCancel ? (
@@ -394,7 +396,7 @@ export function ManageFlow({
               onClick={() => setShowCancel(true)}
               disabled={pending}
             >
-              ✕ Randevuyu İptal Et
+<Icon icon={X} size="sm" /> Randevuyu İptal Et
             </button>
           ) : (
             <div className={styles.cancelConfirm}>

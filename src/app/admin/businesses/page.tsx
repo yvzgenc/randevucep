@@ -3,6 +3,7 @@ import Link from 'next/link'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getBusinessTypeConfig } from '@/lib/businessTypes'
 import { getPlanConfig, isInTrial, trialDaysRemaining } from '@/lib/plans'
+import { Icon } from '@/components/ui/Icon'
 import styles from '../admin.module.css'
 
 export const metadata: Metadata = { title: 'Admin — İşletmeler' }
@@ -101,7 +102,7 @@ export default async function AdminBusinessesPage() {
                     <div className={styles.cellMuted}>{b.slug}</div>
                   </span>
                   <span className={styles.cellMuted}>
-                    {typeCfg.icon} {typeCfg.label}
+                    <Icon icon={typeCfg.icon} size="sm" /> {typeCfg.label}
                   </span>
                   <span className={styles.cellMuted}>
                     {b.owner_email ?? '—'}

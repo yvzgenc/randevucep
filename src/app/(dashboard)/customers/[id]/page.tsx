@@ -2,6 +2,7 @@ import type { Metadata }              from 'next'
 import Link                           from 'next/link'
 import { notFound, redirect }         from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireOwnerBusiness }       from '@/lib/supabase/business'
 import type { Appointment }           from '@/types/database'
 import { CustomerDetail }             from './CustomerDetail'
 import styles from './customer-detail.module.css'
@@ -31,14 +32,8 @@ export default async function CustomerDetailPage({ params }: Props) {
   if (!user) redirect('/login')
 
   // Verify business ownership
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQuery.data) redirect('/onboarding')
-  const bizId = bizQuery.data.id
+  const business = await requireOwnerBusiness(supabase, user.id)
+  const bizId = business.id
 
   // Fetch customer (must belong to this business)
   const custQuery = await supabase

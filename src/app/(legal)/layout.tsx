@@ -1,5 +1,7 @@
 import React from 'react'
 import Link  from 'next/link'
+import { Calendar } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import styles from './legal.module.css'
 
 const FOOTER_LINKS = [
@@ -15,7 +17,7 @@ export default function LegalLayout({ children }: { children: React.ReactNode })
       {/* Top navigation */}
       <nav className={styles.topBar}>
         <Link href="/" className={styles.logo}>
-          <div className={styles.logoMark}>📅</div>
+          <div className={styles.logoMark}><Icon icon={Calendar} size="sm" /></div>
           <span className={styles.logoText}>RandevuCep</span>
         </Link>
         <div className={styles.navLinks}>

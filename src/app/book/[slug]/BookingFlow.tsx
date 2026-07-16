@@ -1,8 +1,14 @@
 'use client'
 import React, { useState, useMemo } from 'react'
 import type { Service, StaffMember, Business, Appointment, BusinessHour, StaffWorkingDay } from '@/types/database'
+import {
+  Scissors, User, Calendar, PenLine, Check, PartyPopper,
+  Clock, Wallet, ClipboardList, AlertTriangle, X, Plus,
+  type LucideIcon,
+} from 'lucide-react'
 import { Button } from '@/components/ui/Button'
 import { Input }  from '@/components/ui/Input'
+import { Icon }   from '@/components/ui/Icon'
 import { bookAppointment } from './actions'
 import styles from './booking.module.css'
 
@@ -114,11 +120,11 @@ function staffWorksOnDate(staffId: number, date: string, staffWd: StaffWorkingDa
 
 // ─── Step bar ─────────────────────────────────────────────────────────────────
 
-const STEP_META: { key: Step; label: string; icon: string }[] = [
-  { key: 'service',  label: 'Hizmet',   icon: '✂'  },
-  { key: 'staff',    label: 'Uzman',    icon: '👤' },
-  { key: 'datetime', label: 'Tarih',    icon: '📅' },
-  { key: 'contact',  label: 'İletişim', icon: '✍'  },
+const STEP_META: { key: Step; label: string; icon: LucideIcon }[] = [
+  { key: 'service',  label: 'Hizmet',   icon: Scissors },
+  { key: 'staff',    label: 'Uzman',    icon: User      },
+  { key: 'datetime', label: 'Tarih',    icon: Calendar  },
+  { key: 'contact',  label: 'İletişim', icon: PenLine   },
 ]
 
 function StepBar({ current }: { current: Step }) {
@@ -135,7 +141,9 @@ function StepBar({ current }: { current: Step }) {
           ].filter(Boolean).join(' ')}
         >
           <div className={styles.stepDot}>
-            {i < idx ? '✓' : <span className={styles.stepDotIcon}>{s.icon}</span>}
+            {i < idx
+              ? <Icon icon={Check} size="sm" />
+              : <span className={styles.stepDotIcon}><Icon icon={s.icon} size="sm" /></span>}
           </div>
           <span className={styles.stepLabel}>{s.label}</span>
         </div>
@@ -234,9 +242,9 @@ export function BookingFlow({
   if (step === 'done') {
     return (
       <div className={styles.done}>
-        <div className={styles.doneConfetti}>🎉</div>
+        <div className={styles.doneConfetti}><Icon icon={PartyPopper} size={40} /></div>
         <div className={styles.doneIconWrap}>
-          <span className={styles.doneCheckmark}>✓</span>
+          <span className={styles.doneCheckmark}><Icon icon={Check} size={32} /></span>
         </div>
         <h2 className={styles.doneTitle}>Randevunuz Alındı!</h2>
         <p className={styles.doneSubtitle}>
@@ -246,25 +254,25 @@ export function BookingFlow({
         <div className={styles.doneSummary}>
           <div className={styles.doneSummaryHeader}>Randevu Detayları</div>
           <div className={styles.doneSummaryRow}>
-            <span className={styles.doneSummaryKey}>✂ Hizmet</span>
+            <span className={styles.doneSummaryKey}><Icon icon={Scissors} size="sm" /> Hizmet</span>
             <span className={styles.doneSummaryVal}>{booking.service?.service_name}</span>
           </div>
           <div className={styles.doneSummaryRow}>
-            <span className={styles.doneSummaryKey}>👤 Uzman</span>
+            <span className={styles.doneSummaryKey}><Icon icon={User} size="sm" /> Uzman</span>
             <span className={styles.doneSummaryVal}>{booking.staff?.full_name}</span>
           </div>
           <div className={styles.doneSummaryRow}>
-            <span className={styles.doneSummaryKey}>📅 Tarih</span>
+            <span className={styles.doneSummaryKey}><Icon icon={Calendar} size="sm" /> Tarih</span>
             <span className={styles.doneSummaryVal}>
               {booking.date ? formatDateFull(booking.date) : ''}
             </span>
           </div>
           <div className={styles.doneSummaryRow}>
-            <span className={styles.doneSummaryKey}>🕐 Saat</span>
+            <span className={styles.doneSummaryKey}><Icon icon={Clock} size="sm" /> Saat</span>
             <span className={styles.doneSummaryVal}>{booking.time}</span>
           </div>
           <div className={styles.doneSummaryRow}>
-            <span className={styles.doneSummaryKey}>💰 Fiyat</span>
+            <span className={styles.doneSummaryKey}><Icon icon={Wallet} size="sm" /> Fiyat</span>
             <span className={styles.doneSummaryVal}>₺{Number(booking.service?.price ?? 0).toFixed(0)}</span>
           </div>
         </div>
@@ -281,7 +289,7 @@ export function BookingFlow({
           className={styles.doneNewBooking}
           onClick={() => { setStep('service'); setBooking(EMPTY_BOOKING) }}
         >
-          + Yeni Randevu Al
+          <Icon icon={Plus} size="sm" /> Yeni Randevu Al
         </button>
       </div>
     )
@@ -296,7 +304,7 @@ export function BookingFlow({
       <div className={styles.cancelRow}>
         {step !== 'service' && (
           <button className={styles.cancelBtn} onClick={handleCancel} type="button">
-            ✕ Sıfırla
+            <Icon icon={X} size="xs" /> Sıfırla
           </button>
         )}
       </div>
@@ -323,7 +331,7 @@ export function BookingFlow({
                 >
                   <span className={styles.optionName}>{svc.service_name}</span>
                   <div className={styles.optionDetails}>
-                    <span className={styles.optionDuration}>⏱ {svc.duration_minutes} dk</span>
+                    <span className={styles.optionDuration}><Icon icon={Clock} size="xs" /> {svc.duration_minutes} dk</span>
                     <span className={styles.optionPrice}>₺{Number(svc.price).toFixed(0)}</span>
                   </div>
                 </button>
@@ -443,7 +451,7 @@ export function BookingFlow({
           {/* Seçim özeti */}
           <div className={styles.summaryBox}>
             <div className={styles.summaryHeader}>
-              <span className={styles.summaryHeaderIcon}>📋</span>
+              <span className={styles.summaryHeaderIcon}><Icon icon={ClipboardList} size="sm" /></span>
               Randevu Özeti
             </div>
             <div className={styles.summaryRow}>
@@ -484,10 +492,14 @@ export function BookingFlow({
             <Input label="Notunuz (isteğe bağlı)" id="note" value={booking.note}
               onChange={(e) => setBooking((b) => ({ ...b, note: e.target.value }))}
               placeholder="Varsa özel isteğiniz..." />
-            {submitError && <p className={styles.errorMsg}>⚠ {submitError}</p>}
+            {submitError && (
+              <p className={styles.errorMsg}><Icon icon={AlertTriangle} size="sm" /> {submitError}</p>
+            )}
             <div className={styles.stepActions}>
               <button type="button" className={styles.backLink} onClick={() => setStep('datetime')}>← Geri</button>
-              <Button type="submit" loading={submitting}>🎯 Randevuyu Onayla</Button>
+              <Button type="submit" loading={submitting}>
+                <Icon icon={Check} size="sm" /> Randevuyu Onayla
+              </Button>
             </div>
           </form>
         </div>

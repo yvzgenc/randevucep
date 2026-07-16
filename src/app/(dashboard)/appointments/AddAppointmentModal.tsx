@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState, useTransition, useEffect } from 'react'
+import { Plus, X, Calendar, Clock, Scissors, User } from 'lucide-react'
 import type { Service, StaffMember } from '@/types/database'
 import { addAppointmentAction } from './add-actions'
+import { Icon } from '@/components/ui/Icon'
 import styles from './add-modal.module.css'
 
 interface Props {
@@ -84,8 +86,8 @@ export function AddAppointmentModal({ services, staff, onClose, onDone }: Props)
       {/* Modal */}
       <div className={styles.modal} role="dialog" aria-modal="true">
         <div className={styles.modalHeader}>
-          <h2 className={styles.modalTitle}>➕ Randevu Ekle</h2>
-          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Kapat">✕</button>
+          <h2 className={styles.modalTitle}><Icon icon={Plus} size="sm" /> Randevu Ekle</h2>
+          <button className={styles.closeBtn} onClick={onClose} type="button" aria-label="Kapat"><Icon icon={X} size="xs" /></button>
         </div>
 
         <div className={styles.body}>
@@ -182,10 +184,10 @@ export function AddAppointmentModal({ services, staff, onClose, onDone }: Props)
           {/* Özet */}
           {selectedService && selectedStaff && date && time && (
             <div className={styles.summary}>
-              <span>📅 {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
-              <span>🕐 {time}</span>
-              <span>✂ {selectedService.service_name}</span>
-              <span>👤 {selectedStaff.full_name}</span>
+              <span><Icon icon={Calendar} size="xs" /> {new Date(date + 'T00:00:00').toLocaleDateString('tr-TR', { weekday: 'long', day: 'numeric', month: 'long' })}</span>
+              <span><Icon icon={Clock} size="xs" /> {time}</span>
+              <span><Icon icon={Scissors} size="xs" /> {selectedService.service_name}</span>
+              <span><Icon icon={User} size="xs" /> {selectedStaff.full_name}</span>
               {selectedService.price > 0 && <span>₺{selectedService.price}</span>}
             </div>
           )}

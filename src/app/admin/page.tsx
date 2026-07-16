@@ -1,10 +1,12 @@
 import type { Metadata } from 'next'
+import { Building2, FlaskConical, CreditCard, X, Hand, type LucideIcon } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { Icon } from '@/components/ui/Icon'
 import styles from './admin.module.css'
 
 export const metadata: Metadata = { title: 'Admin — Genel Bakış' }
 
-const STAT_ICONS = ['🏢', '🔬', '💳', '✕']
+const STAT_ICONS: LucideIcon[] = [Building2, FlaskConical, CreditCard, X]
 
 export default async function AdminPage() {
   const supabase = await createServerSupabaseClient()
@@ -43,7 +45,7 @@ export default async function AdminPage() {
     <div>
       {/* Welcome banner */}
       <div className={styles.welcomeBanner}>
-        <div className={styles.welcomeBannerIcon}>👋</div>
+        <div className={styles.welcomeBannerIcon}><Icon icon={Hand} size={28} /></div>
         <div>
           <p className={styles.welcomeBannerTitle}>Admin Paneli</p>
           <p className={styles.welcomeBannerDesc}>Platform genelindeki işletmeleri ve abonelikleri yönetin.</p>
@@ -60,7 +62,7 @@ export default async function AdminPage() {
       <div className={styles.statsRow}>
         {stats.map((s, i) => (
           <div key={s.label} className={styles.statCard}>
-            <div className={styles.statIcon}>{STAT_ICONS[i]}</div>
+            <div className={styles.statIcon}><Icon icon={STAT_ICONS[i]} size="md" /></div>
             <p className={styles.statLabel}>{s.label}</p>
             <p className={styles.statValue}>{s.value}</p>
           </div>

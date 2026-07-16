@@ -4,6 +4,7 @@ import { notFound } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { getBusinessTypeConfig } from '@/lib/businessTypes'
 import { getPlanConfig, isInTrial, trialDaysRemaining } from '@/lib/plans'
+import { Icon } from '@/components/ui/Icon'
 import { EditForm } from './EditForm'
 import styles from '../../admin.module.css'
 
@@ -71,7 +72,7 @@ export default async function AdminBusinessDetailPage({ params }: Props) {
       <div className={styles.pageHeader}>
         <div>
           <h1 className={styles.pageTitle}>
-            {typeCfg.icon} {b.name}
+            <Icon icon={typeCfg.icon} size="lg" /> {b.name}
           </h1>
           <p className={styles.pageDesc}>
             {typeCfg.label} · #{b.id}
@@ -87,10 +88,10 @@ export default async function AdminBusinessDetailPage({ params }: Props) {
           {([
             ['İsim',          b.name],
             ['Slug',          b.slug],
-            ['Tür',           `${typeCfg.icon} ${typeCfg.label}`],
+            ['Tür',           typeCfg.label],
             ['Şehir',         fmt(b.city)],
             ['Telefon',       fmt(b.phone)],
-            ['Aktif',         b.is_active ? '✓ Evet' : '✗ Hayır'],
+            ['Aktif',         b.is_active ? 'Evet' : 'Hayır'],
             ['Kayıt Tarihi',  fmtDateTime(b.created_at)],
           ] as [string, string][]).map(([key, val]) => (
             <div key={key} className={styles.detailRow}>
@@ -129,7 +130,7 @@ export default async function AdminBusinessDetailPage({ params }: Props) {
             ['Personel',         planCfg.max_staff === -1          ? 'Sınırsız' : String(planCfg.max_staff)],
             ['Hizmet',           planCfg.max_services === -1       ? 'Sınırsız' : String(planCfg.max_services)],
             ['Aylık Randevu',    planCfg.monthly_appointments === -1 ? 'Sınırsız' : String(planCfg.monthly_appointments)],
-            ['Online Rezervasyon', planCfg.online_booking_enabled  ? '✓ Açık'   : '✗ Kapalı'],
+            ['Online Rezervasyon', planCfg.online_booking_enabled  ? 'Açık'   : 'Kapalı'],
           ] as [string, string][]).map(([label, val]) => (
             <div key={label} className={styles.statCard}>
               <p className={styles.statLabel}>{label}</p>

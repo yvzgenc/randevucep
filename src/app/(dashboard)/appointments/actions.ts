@@ -2,6 +2,7 @@
 
 import { revalidatePath }             from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { verifyBusinessOwnership }    from '@/lib/supabase/business'
 import { notifyStatusChangeMulti, sendSmsNotification } from '@/lib/notifications'
 import { requireNonNull }             from '@/lib/supabase/guards'
 import type { Database }              from '@/types/database'
@@ -19,10 +20,6 @@ export interface UpdateStatusResult {
 // GenericStringError that occurs when Supabase SDK cannot parse a partial
 // select string into column types.
 type ApptRow = Database['public']['Tables']['appointments']['Row']
-type BizRow  = Pick<
-  Database['public']['Tables']['businesses']['Row'],
-  'id' | 'name' | 'slug' | 'phone'
->
 
 export async function updateAppointmentStatus(
   appointmentId: number,
@@ -57,18 +54,10 @@ export async function updateAppointmentStatus(
   }
 
   // Confirm ownership
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('id, name, slug, phone')
-    .eq('id', businessId)
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (bizQuery.error || !bizQuery.data) {
+  const biz = await verifyBusinessOwnership(supabase, user.id, businessId)
+  if (!biz) {
     return { error: 'Bu randevuyu güncelleme yetkiniz yok.' }
   }
-
-  const biz: BizRow = bizQuery.data
 
   // Update status
   const updateQuery = await supabase
@@ -172,14 +161,8 @@ export async function updateAppointmentNote(
 
   if (!apptQ.data?.business_id) return { error: 'Randevu bulunamadı.' }
 
-  const bizQ = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('id', apptQ.data.business_id)
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQ.data) return { error: 'Bu randevuyu düzenleme yetkiniz yok.' }
+  const biz = await verifyBusinessOwnership(supabase, user.id, apptQ.data.business_id)
+  if (!biz) return { error: 'Bu randevuyu düzenleme yetkiniz yok.' }
 
   const { error } = await supabase
     .from('appointments')

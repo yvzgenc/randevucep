@@ -3,11 +3,13 @@ import React from 'react'
 
 import { useState } from 'react'
 import { useRouter } from 'next/navigation'
+import { Calendar } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
 import { BUSINESS_TYPES, getBusinessTypeConfig, toBusinessType, type BusinessType } from '@/lib/businessTypes'
 import { TRIAL_DAYS } from '@/lib/plans'
 import { Button } from '@/components/ui/Button'
 import { Input } from '@/components/ui/Input'
+import { Icon } from '@/components/ui/Icon'
 import styles from './onboarding.module.css'
 
 interface Props {
@@ -185,7 +187,7 @@ export function OnboardingFlow({
     return (
       <div className={styles.page}>
         <div className={styles.card}>
-          <div className={styles.logo}>📅 RandevuCep</div>
+          <div className={styles.logo}><Icon icon={Calendar} size="sm" /> RandevuCep</div>
           <h1 className={styles.heading}>İşletme Türünü Seçin</h1>
           <p className={styles.sub}>Arayüzü işletmenize özelleştireceğiz.</p>
 
@@ -201,7 +203,7 @@ export function OnboardingFlow({
                   ].filter(Boolean).join(' ')}
                   onClick={() => setBusinessType(type)}
                 >
-                  <span className={styles.typeIcon}>{cfg.icon}</span>
+                  <span className={styles.typeIcon}><Icon icon={cfg.icon} size="xl" /></span>
                   <span className={styles.typeLabel}>{cfg.label}</span>
                 </button>
               )
@@ -221,7 +223,7 @@ export function OnboardingFlow({
   return (
     <div className={styles.page}>
       <div className={styles.card}>
-        <div className={styles.logo}>{config.icon} RandevuCep</div>
+        <div className={styles.logo}><Icon icon={config.icon} size="lg" /> RandevuCep</div>
         <h1 className={styles.heading}>İşletmenizi Kurun</h1>
         <p className={styles.sub}>
           <button className={styles.changeType} onClick={() => setStep('type')}>

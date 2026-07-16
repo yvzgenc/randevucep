@@ -12,19 +12,9 @@
 //   - Subscription only set to 'active' when verification returns 'success'.
 
 import { NextRequest, NextResponse } from 'next/server'
-import { createClient }              from '@supabase/supabase-js'
-import type { Database }             from '@/types/database'
+import { createServiceClient }       from '@/lib/supabase/service'
 import { getPaymentProvider }        from '@/lib/payments'
 import { toPlanName }                from '@/lib/plans'
-
-function createServiceClient() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL
-  const key = process.env.SUPABASE_SERVICE_ROLE_KEY
-  if (!url || !key) {
-    throw new Error('SUPABASE_SERVICE_ROLE_KEY is not set — webhook cannot process.')
-  }
-  return createClient<Database>(url, key, { auth: { persistSession: false } })
-}
 
 /**
  * Extracts the billing period from the idempotency key.

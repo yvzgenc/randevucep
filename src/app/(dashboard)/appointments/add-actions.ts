@@ -2,6 +2,7 @@
 
 import { revalidatePath }             from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getOwnerBusiness }           from '@/lib/supabase/business'
 
 export interface AddAppointmentInput {
   serviceId:   number
@@ -29,14 +30,9 @@ export async function addAppointmentAction(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
-  const bizQ = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQ.data) return { error: 'İşletme bulunamadı.' }
-  const businessId = bizQ.data.id
+  const business = await getOwnerBusiness(supabase, user.id)
+  if (!business) return { error: 'İşletme bulunamadı.' }
+  const businessId = business.id
 
   // Use existing book_appointment RPC — same as online booking
   const { data, error } = await supabase.rpc('book_appointment', {

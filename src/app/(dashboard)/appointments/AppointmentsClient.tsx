@@ -1,11 +1,16 @@
 'use client'
 
 import React, { useState, useMemo, useCallback } from 'react'
+import {
+  Plus, List, LayoutGrid, Search, X, Filter,
+  Hourglass, CheckCircle2, Star, Calendar,
+} from 'lucide-react'
 import type { Appointment, Service, StaffMember } from '@/types/database'
 import { CalendarView }          from './CalendarView'
 import { AppointmentActions }    from './AppointmentActions'
 import { AddAppointmentModal }   from './AddAppointmentModal'
 import { NoteEditor }            from './NoteEditor'
+import { Icon }                  from '@/components/ui/Icon'
 import calStyles  from './calendar.module.css'
 import styles     from './appointments.module.css'
 import tabStyles  from './appt-tabs.module.css'
@@ -130,17 +135,17 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
             onClick={() => setShowModal(true)}
             type="button"
           >
-            + Randevu Ekle
+            <Icon icon={Plus} size="sm" /> Randevu Ekle
           </button>
           <div className={calStyles.viewToggle}>
             <button
               className={`${calStyles.viewBtn} ${view === 'list' ? calStyles.viewBtnActive : ''}`}
               onClick={() => setView('list')}
-            >☰ Liste</button>
+            ><Icon icon={List} size="xs" /> Liste</button>
             <button
               className={`${calStyles.viewBtn} ${view === 'week' ? calStyles.viewBtnActive : ''}`}
               onClick={() => setView('week')}
-            >▦ Hafta</button>
+            ><Icon icon={LayoutGrid} size="xs" /> Hafta</button>
           </div>
         </div>
       </div>
@@ -181,7 +186,7 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
         <div className={srchStyles.searchBar}>
           {/* Text search */}
           <div className={srchStyles.searchInputWrap}>
-            <span className={srchStyles.searchIcon}>🔍</span>
+            <span className={srchStyles.searchIcon}><Icon icon={Search} size="sm" /></span>
             <input
               className={srchStyles.searchInput}
               type="text"
@@ -191,7 +196,7 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
             />
             {query && (
               <button className={srchStyles.clearBtn} onClick={() => setQuery('')} type="button">
-                ✕
+                <Icon icon={X} size="xs" />
               </button>
             )}
           </div>
@@ -202,7 +207,7 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
             onClick={() => setShowFilters((v) => !v)}
             type="button"
           >
-            ⚙ Filtre
+            <Icon icon={Filter} size="sm" /> Filtre
             {hasActiveFilter && <span className={srchStyles.filterDot} />}
           </button>
         </div>
@@ -263,7 +268,7 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
 
           {hasActiveFilter && (
             <button className={srchStyles.clearAllBtn} onClick={clearFilters} type="button">
-              ✕ Filtreleri Temizle
+              <Icon icon={X} size="xs" /> Filtreleri Temizle
             </button>
           )}
         </div>
@@ -286,10 +291,15 @@ export function AppointmentsClient({ appointments, services, staff }: Props) {
       {view === 'list' && (
         filtered.length === 0 ? (
           <div className={styles.empty}>
-            <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.35 }}>
-              {hasActiveFilter ? '🔍' :
-               tab === 'pending' ? '⏳' : tab === 'confirmed' ? '✅' :
-               tab === 'done' ? '★' : tab === 'cancelled' ? '✕' : '📅'}
+            <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, opacity: 0.35 }}>
+              <Icon
+                icon={
+                  hasActiveFilter ? Search :
+                  tab === 'pending' ? Hourglass : tab === 'confirmed' ? CheckCircle2 :
+                  tab === 'done' ? Star : tab === 'cancelled' ? X : Calendar
+                }
+                size={32}
+              />
             </div>
             <p className={styles.emptyTitle}>
               {hasActiveFilter ? 'Arama kriterinizle eşleşen randevu bulunamadı.' : currentTab.empty}

@@ -134,6 +134,9 @@
 }
 
 .copyBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
   flex-shrink: 0;
   padding: 5px 12px;
   background: var(--color-accent);
@@ -197,7 +200,8 @@
 }
 
 .tipIcon {
-  font-size: 16px;
+  display: inline-flex;
+  color: var(--color-accent);
   flex-shrink: 0;
   margin-top: 1px;
 }

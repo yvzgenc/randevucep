@@ -2,6 +2,7 @@
 
 import { revalidatePath }             from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { verifyBusinessOwnership }    from '@/lib/supabase/business'
 
 // ── Slug yardımcısı ───────────────────────────────────────────────────────────
 
@@ -44,17 +45,11 @@ export async function saveBusinessProfile(
   if (slug.length < 3) return { error: "Rezervasyon URL'si en az 3 karakter olmalıdır." }
 
   // Ownership check
-  const bizQ = await supabase
-    .from('businesses')
-    .select('id, slug')
-    .eq('id', input.businessId)
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQ.data) return { error: 'İşletme bulunamadı.' }
+  const business = await verifyBusinessOwnership(supabase, user.id, input.businessId)
+  if (!business) return { error: 'İşletme bulunamadı.' }
 
   // Slug uniqueness — only check if slug changed
-  if (bizQ.data.slug !== slug) {
+  if (business.slug !== slug) {
     const slugQ = await supabase
       .from('businesses')
       .select('id')

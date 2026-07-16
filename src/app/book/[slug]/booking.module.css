@@ -59,6 +59,9 @@
 }
 
 .heroCity {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--color-muted);
   margin-top: 3px;
@@ -241,8 +244,9 @@
 .stepActive.stepItem::after { background: var(--color-border); }
 
 .stepDotIcon {
-  font-size: 13px;
-  line-height: 1;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .stepDot {
@@ -368,6 +372,9 @@
 }
 
 .optionDuration {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   color: var(--color-muted);
 }
@@ -546,7 +553,8 @@
 }
 
 .summaryHeaderIcon {
-  font-size: 15px;
+  display: inline-flex;
+  color: var(--color-accent);
 }
 
 .summaryTitle {
@@ -637,6 +645,9 @@
 }
 
 .errorMsg {
+  display: flex;
+  align-items: center;
+  gap: 8px;
   font-size: 13px;
   color: var(--color-danger);
   padding: 12px 14px;
@@ -657,8 +668,9 @@
 }
 
 .doneConfetti {
-  font-size: 40px;
-  line-height: 1;
+  display: flex;
+  justify-content: center;
+  color: var(--color-accent);
   margin-bottom: 12px;
   animation: confettiBounce 0.6s ease;
 }
@@ -670,10 +682,8 @@
 }
 
 .doneCheckmark {
-  font-size: 32px;
+  display: flex;
   color: var(--color-success);
-  font-weight: 700;
-  line-height: 1;
 }
 
 .doneSummaryHeader {
@@ -762,7 +772,7 @@
 
 .doneSummaryRow:last-child { border-bottom: none; }
 
-.doneSummaryKey { color: var(--color-muted); font-weight: 500; }
+.doneSummaryKey { display: inline-flex; align-items: center; gap: 6px; color: var(--color-muted); font-weight: 500; }
 .doneSummaryVal { font-weight: 600; text-align: right; }
 
 .doneNote {
@@ -785,7 +795,8 @@
 }
 
 .closedIcon {
-  font-size: 36px;
+  display: flex;
+  justify-content: center;
   margin-bottom: 16px;
   opacity: 0.5;
 }
@@ -824,6 +835,9 @@
 }
 
 .cancelBtn {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: 1px solid var(--color-border);
   border-radius: var(--radius-md);
@@ -898,6 +912,9 @@
 }
 
 .doneNewBooking {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   background: none;
   border: none;
   color: var(--color-muted);

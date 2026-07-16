@@ -1,5 +1,7 @@
 import type { Metadata } from 'next'
 import Link from 'next/link'
+import { Check, X, Hourglass } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import styles from '../payment.module.css'
 
 export const metadata: Metadata = { title: 'Ödeme Sonucu' }
@@ -19,7 +21,7 @@ export default async function PaymentResultPage({ searchParams }: Props) {
       <div className={styles.card}>
         {isSuccess ? (
           <>
-            <div className={styles.iconSuccess}>✓</div>
+            <div className={styles.iconSuccess}><Icon icon={Check} size="lg" /></div>
             <h1 className={styles.title}>Ödeme Başarılı!</h1>
             <p className={styles.desc}>
               {plan
@@ -33,7 +35,7 @@ export default async function PaymentResultPage({ searchParams }: Props) {
           </>
         ) : isFailed ? (
           <>
-            <div className={styles.iconError}>✕</div>
+            <div className={styles.iconError}><Icon icon={X} size="lg" /></div>
             <h1 className={styles.title}>Ödeme Başarısız</h1>
             <p className={styles.desc}>
               Ödeme işlemi tamamlanamadı. Kart bilgilerinizi kontrol edip tekrar deneyebilirsiniz.
@@ -44,7 +46,7 @@ export default async function PaymentResultPage({ searchParams }: Props) {
           </>
         ) : (
           <>
-            <div className={styles.iconPending}>⏳</div>
+            <div className={styles.iconPending}><Icon icon={Hourglass} size="lg" /></div>
             <h1 className={styles.title}>Ödeme İşleniyor</h1>
             <p className={styles.desc}>
               Ödemeniz işleme alındı. İşlem tamamlandığında planınız otomatik olarak güncellenecek.

@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState } from 'react'
+import { ChevronUp, ChevronDown } from 'lucide-react'
 import type { Appointment } from '@/types/database'
 import { AppointmentActions } from '../appointments/AppointmentActions'
+import { Icon } from '@/components/ui/Icon'
 import styles from './today.module.css'
 
 interface Props {
@@ -37,7 +39,7 @@ export function TodayList({ appointments }: Props) {
           onClick={() => setCollapsed((v) => !v)}
           type="button"
         >
-          {collapsed ? '▼ Göster' : '▲ Gizle'}
+          <Icon icon={collapsed ? ChevronDown : ChevronUp} size="xs" /> {collapsed ? 'Göster' : 'Gizle'}
         </button>
       </div>
 

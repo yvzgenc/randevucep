@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
+import { Check, ChevronUp, ChevronDown } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import type { StaffWorkingDay } from '@/types/database'
 import styles from './staff-availability.module.css'
 
@@ -81,7 +83,7 @@ export function StaffWorkingDaysEditor({ staffId, businessId, staffName, initial
         <span className={styles.triggerDays}>
           {DAYS.filter(({ dow }) => working[dow]).map(({ label }) => label).join(' · ')}
         </span>
-        <span className={styles.triggerArrow}>{open ? '▲' : '▼'}</span>
+        <span className={styles.triggerArrow}><Icon icon={open ? ChevronUp : ChevronDown} size="sm" /></span>
       </button>
 
       {open && (
@@ -101,7 +103,7 @@ export function StaffWorkingDaysEditor({ staffId, businessId, staffName, initial
           </div>
           <div className={styles.panelActions}>
             {error  && <span className={styles.errorMsg}>{error}</span>}
-            {saved  && <span className={styles.successMsg}>✓ Kaydedildi</span>}
+            {saved  && <span className={styles.successMsg}><Icon icon={Check} size="xs" /> Kaydedildi</span>}
             <button
               type="button"
               className={styles.saveBtn}

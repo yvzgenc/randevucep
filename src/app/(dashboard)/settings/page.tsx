@@ -1,6 +1,7 @@
 import type { Metadata }         from 'next'
 import { redirect }              from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireOwnerBusiness }  from '@/lib/supabase/business'
 import {
   PLANS,
   PLAN_NAMES,
@@ -17,6 +18,7 @@ import { QrShareCard }     from './QrShareCard'
 import { WorkingHours }    from './WorkingHours'
 import { SettingsTabs }    from './SettingsTabs'
 import { ProfileSettings }  from './ProfileSettings'
+import { AccountSecurity }  from './AccountSecurity'
 
 export const metadata: Metadata = { title: 'Ayarlar' }
 
@@ -25,14 +27,7 @@ export default async function SettingsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('*')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQuery.data) redirect('/onboarding')
-  const business = bizQuery.data
+  const business = await requireOwnerBusiness(supabase, user.id)
 
   const subQuery = await supabase
     .from('subscriptions')
@@ -82,7 +77,10 @@ export default async function SettingsPage() {
       <SettingsTabs>
         {{
           profil: (
-            <ProfileSettings business={business} appUrl={appUrl} />
+            <div style={{ display: 'flex', flexDirection: 'column', gap: 16 }}>
+              <ProfileSettings business={business} appUrl={appUrl} />
+              <AccountSecurity />
+            </div>
           ),
           hours: (
             <WorkingHours
@@ -138,7 +136,7 @@ export default async function SettingsPage() {
                     { label: 'Personel',         value: planConfig.max_staff === -1 ? 'Sınırsız' : planConfig.max_staff },
                     { label: 'Hizmet',           value: planConfig.max_services === -1 ? 'Sınırsız' : planConfig.max_services },
                     { label: 'Aylık Randevu',    value: planConfig.monthly_appointments === -1 ? 'Sınırsız' : planConfig.monthly_appointments },
-                    { label: 'Online Rezervasyon', value: planConfig.online_booking_enabled ? '✓ Açık' : '✗ Kapalı' },
+                    { label: 'Online Rezervasyon', value: planConfig.online_booking_enabled ? 'Açık' : 'Kapalı' },
                   ].map(({ label, value }) => (
                     <div key={label} className={styles.limitItem}>
                       <span className={styles.limitLabel}>{label}</span>
@@ -182,8 +180,8 @@ export default async function SettingsPage() {
                         </li>
                         <li>
                           {cfg.online_booking_enabled
-                            ? '✓ Online rezervasyon'
-                            : '✗ Online rezervasyon yok'}
+                            ? 'Online rezervasyon'
+                            : 'Online rezervasyon yok'}
                         </li>
                       </ul>
                       {isCurrent ? (

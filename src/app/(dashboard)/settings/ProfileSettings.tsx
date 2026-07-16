@@ -1,9 +1,11 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
+import { Check } from 'lucide-react'
 import type { Business } from '@/types/database'
 import { saveBusinessProfile } from './profile-actions'
 import { getBusinessTypeConfig } from '@/lib/businessTypes'
+import { Icon } from '@/components/ui/Icon'
 import styles from './profile.module.css'
 
 interface Props {
@@ -160,7 +162,7 @@ export function ProfileSettings({ business, appUrl }: Props) {
         <div className={styles.field}>
           <label className={styles.label}>İşletme Türü</label>
           <div className={styles.typeBadge}>
-            {typeCfg.icon} {typeCfg.label}
+            <Icon icon={typeCfg.icon} size="sm" /> {typeCfg.label}
           </div>
           <p className={styles.typeNote}>İşletme türü değiştirilemez. Değişiklik için destek ile iletişime geçin.</p>
         </div>
@@ -168,7 +170,7 @@ export function ProfileSettings({ business, appUrl }: Props) {
       </div>
 
       <div className={styles.footer}>
-        {saved  && <span className={styles.successMsg}>✓ Bilgiler kaydedildi</span>}
+        {saved  && <span className={styles.successMsg}><Icon icon={Check} size="xs" /> Bilgiler kaydedildi</span>}
         {error  && <span className={styles.errorMsg}>{error}</span>}
         <button
           className={styles.saveBtn}

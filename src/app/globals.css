@@ -67,6 +67,17 @@
   --sidebar-width: 256px;
 }
 
+/* ── Breakpoints ──────────────────────────────────────────────────────────────
+   CSS custom properties can't be used inside @media conditions, so these are
+   documented canonical values only — hardcode the raw px in each module's
+   @media query, matching one of the tiers below. Keeps breakpoints consistent
+   across CSS modules without a false promise of var() reuse in @media.
+
+   --bp-sm: 480px   — phones (single-column layouts, booking flow, forms)
+   --bp-md: 640px   — large phones / small tablets (column-hiding in tables)
+   --bp-lg: 900px   — tablets / sidebar collapse (admin, dashboard shell)
+*/
+
 *, *::before, *::after {
   box-sizing: border-box;
   margin: 0;

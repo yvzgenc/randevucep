@@ -40,6 +40,9 @@
 }
 
 .modalTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 15px;
   font-weight: 700;
 }
@@ -131,6 +134,9 @@
 }
 
 .summary span {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 12px;
   font-weight: 600;
   color: var(--color-accent-2);

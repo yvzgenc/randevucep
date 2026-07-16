@@ -1,6 +1,8 @@
 'use client'
 import React, { useState, useTransition } from 'react'
+import { Check, X, Star, MoreHorizontal, Mail, type LucideIcon } from 'lucide-react'
 import { updateAppointmentStatus, type AppointmentStatus } from './actions'
+import { Icon } from '@/components/ui/Icon'
 import styles from './appointments.module.css'
 
 interface Props {
@@ -10,11 +12,11 @@ interface Props {
   savedEmail:    string | null
 }
 
-const STATUS_OPTIONS: { value: AppointmentStatus; label: string }[] = [
-  { value: 'Onaylı',     label: '✓ Onayla'    },
-  { value: 'İptal',      label: '✕ İptal Et'   },
-  { value: 'Tamamlandı', label: '★ Tamamlandı' },
-  { value: 'Gelmedi',    label: '— Gelmedi'    },
+const STATUS_OPTIONS: { value: AppointmentStatus; label: string; icon: LucideIcon | null }[] = [
+  { value: 'Onaylı',     label: 'Onayla',    icon: Check },
+  { value: 'İptal',      label: 'İptal Et',  icon: X     },
+  { value: 'Tamamlandı', label: 'Tamamlandı',icon: Star  },
+  { value: 'Gelmedi',    label: 'Gelmedi',   icon: null  },
 ]
 
 export function AppointmentActions({ appointmentId, currentStatus, savedEmail }: Props) {
@@ -52,7 +54,7 @@ export function AppointmentActions({ appointmentId, currentStatus, savedEmail }:
         disabled={pending}
         aria-label="Durum güncelle"
       >
-        {pending ? '…' : '⋯'}
+        {pending ? '…' : <Icon icon={MoreHorizontal} size="sm" />}
       </button>
 
       {open && (
@@ -71,7 +73,7 @@ export function AppointmentActions({ appointmentId, currentStatus, savedEmail }:
           )}
           {hasEmail && (
             <div className={styles.actionEmailSaved}>
-              📧 {savedEmail}
+              <Icon icon={Mail} size="xs" /> {savedEmail}
             </div>
           )}
           {STATUS_OPTIONS.filter((o) => o.value !== currentStatus).map((opt) => (
@@ -81,7 +83,7 @@ export function AppointmentActions({ appointmentId, currentStatus, savedEmail }:
               onClick={() => handleSelect(opt.value)}
               disabled={pending}
             >
-              {opt.label}
+              {opt.icon && <Icon icon={opt.icon} size="xs" />} {opt.label}
             </button>
           ))}
         </div>

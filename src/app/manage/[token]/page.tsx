@@ -1,7 +1,9 @@
 import type { Metadata }              from 'next'
 import { notFound }                   from 'next/navigation'
+import { Calendar }                   from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { ManageFlow }                 from './ManageFlow'
+import { Icon }                       from '@/components/ui/Icon'
 import styles from './manage.module.css'
 
 interface Props {
@@ -64,7 +66,7 @@ export default async function ManagePage({ params }: Props) {
     <div className={styles.page}>
       <header className={styles.header}>
         <div className={styles.brand}>
-          <div className={styles.brandMark}>📅</div>
+          <div className={styles.brandMark}><Icon icon={Calendar} size="md" /></div>
           <div>
             <div className={styles.brandName}>{biz?.name ?? 'İşletme'}</div>
             <div className={styles.brandSub}>Randevu Yönetimi</div>
@@ -89,7 +91,8 @@ export default async function ManagePage({ params }: Props) {
       </main>
 
       <footer className={styles.footer}>
-        <span>📅 RandevuCep ile çalışmaktadır</span>
+        <Icon icon={Calendar} size="xs" />
+        <span>RandevuCep ile çalışmaktadır</span>
       </footer>
     </div>
   )

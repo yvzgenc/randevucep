@@ -1,7 +1,9 @@
 import type { Metadata }         from 'next'
 import { notFound }              from 'next/navigation'
+import { MapPin, Lock, Phone, Scissors, User, MessageCircle } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { BookingFlow }           from './BookingFlow'
+import { Icon }                  from '@/components/ui/Icon'
 import { getPlanConfig }         from '@/lib/plans'
 import type { Appointment, BusinessSettings, BusinessHour, BusinessClosure, StaffWorkingDay } from '@/types/database'
 import styles from './booking.module.css'
@@ -62,7 +64,7 @@ export default async function BookingPage({ params }: Props) {
               <div>
                 <h1 className={styles.heroName}>{business.name}</h1>
                 {business.city && (
-                  <p className={styles.heroCity}>📍 {business.city}</p>
+                  <p className={styles.heroCity}><Icon icon={MapPin} size="xs" /> {business.city}</p>
                 )}
               </div>
             </div>
@@ -70,7 +72,7 @@ export default async function BookingPage({ params }: Props) {
         </header>
         <main className={styles.main}>
           <div className={styles.closedBox}>
-            <div className={styles.closedIcon}>🔒</div>
+            <div className={styles.closedIcon}><Icon icon={Lock} size={36} /></div>
             <p className={styles.closedTitle}>Online Rezervasyon Kapalı</p>
             <p className={styles.closedDesc}>
               Bu işletme şu an online rezervasyona kapalıdır.
@@ -80,7 +82,7 @@ export default async function BookingPage({ params }: Props) {
             </p>
             {business.phone && (
               <a href={`tel:${business.phone}`} className={styles.callBtn}>
-                📞 Hemen Ara
+                <Icon icon={Phone} size="sm" /> Hemen Ara
               </a>
             )}
           </div>
@@ -139,7 +141,7 @@ export default async function BookingPage({ params }: Props) {
             <div>
               <h1 className={styles.heroName}>{business.name}</h1>
               {business.city && (
-                <p className={styles.heroCity}>📍 {business.city}</p>
+                <p className={styles.heroCity}><Icon icon={MapPin} size="xs" /> {business.city}</p>
               )}
             </div>
           </div>
@@ -150,14 +152,14 @@ export default async function BookingPage({ params }: Props) {
 
           <div className={styles.heroMeta}>
             {serviceCount > 0 && (
-              <span className={styles.heroMetaChip}>✂ {serviceCount} hizmet</span>
+              <span className={styles.heroMetaChip}><Icon icon={Scissors} size="xs" /> {serviceCount} hizmet</span>
             )}
             {staffCount > 0 && (
-              <span className={styles.heroMetaChip}>👤 {staffCount} uzman</span>
+              <span className={styles.heroMetaChip}><Icon icon={User} size="xs" /> {staffCount} uzman</span>
             )}
             {business.phone && (
               <a href={`tel:${business.phone}`} className={styles.heroMetaChip}>
-                📞 {business.phone}
+                <Icon icon={Phone} size="xs" /> {business.phone}
               </a>
             )}
             {business.whatsapp_number && (
@@ -167,7 +169,7 @@ export default async function BookingPage({ params }: Props) {
                 rel="noreferrer"
                 className={`${styles.heroMetaChip} ${styles.heroWhatsapp}`}
               >
-                💬 WhatsApp
+                <Icon icon={MessageCircle} size="xs" /> WhatsApp
               </a>
             )}
           </div>

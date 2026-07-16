@@ -1,6 +1,7 @@
 import type { Metadata }              from 'next'
 import { redirect }                   from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireOwnerBusiness }       from '@/lib/supabase/business'
 import type { Appointment, Service, StaffMember } from '@/types/database'
 import { AppointmentsClient }         from './AppointmentsClient'
 
@@ -11,14 +12,7 @@ export default async function AppointmentsPage() {
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) redirect('/login')
 
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQuery.data) redirect('/onboarding')
-  const business = bizQuery.data
+  const business = await requireOwnerBusiness(supabase, user.id)
 
   const from = new Date()
   from.setMonth(from.getMonth() - 3)

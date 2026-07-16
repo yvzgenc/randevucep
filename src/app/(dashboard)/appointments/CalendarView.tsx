@@ -1,8 +1,10 @@
 'use client'
 
 import React, { useState, useCallback, useRef, useEffect } from 'react'
+import { X } from 'lucide-react'
 import type { Appointment } from '@/types/database'
 import { AppointmentActions } from './AppointmentActions'
+import { Icon } from '@/components/ui/Icon'
 import styles from './calendar.module.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -118,7 +120,7 @@ function ApptPopup({
       className={styles.popup}
       style={{ left: safeX, top: safeY }}
     >
-      <button className={styles.popupClose} onClick={onClose}>✕</button>
+      <button className={styles.popupClose} onClick={onClose}><Icon icon={X} size="xs" /></button>
       <p className={styles.popupName}>{appt.customer_name}</p>
       <p className={styles.popupTime}>{dateFmt} · {appt.appointment_time} ({appt.duration_minutes} dk)</p>
       <div className={styles.popupRows}>

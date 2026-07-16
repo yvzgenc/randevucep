@@ -2,6 +2,7 @@
 
 import { revalidatePath }             from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { verifyBusinessOwnership }    from '@/lib/supabase/business'
 
 export async function saveCustomerNote(opts: {
   customerId:  number
@@ -13,14 +14,8 @@ export async function saveCustomerNote(opts: {
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
   // Verify ownership — customer must belong to this business
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('owner_id', user.id)
-    .eq('id', opts.businessId)
-    .maybeSingle()
-
-  if (!bizQuery.data) return { error: 'Yetki hatası.' }
+  const business = await verifyBusinessOwnership(supabase, user.id, opts.businessId)
+  if (!business) return { error: 'Yetki hatası.' }
 
   const { error } = await supabase
     .from('customers')

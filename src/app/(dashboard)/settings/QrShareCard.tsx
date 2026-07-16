@@ -1,6 +1,11 @@
 'use client'
 
 import React, { useState, useCallback } from 'react'
+import {
+  Download, Printer, Check, MessageCircle, Share2,
+  Smartphone, Tag, Camera, type LucideIcon,
+} from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import styles from './qr.module.css'
 
 interface Props {
@@ -173,10 +178,10 @@ export function QrShareCard({ bookingUrl, bizName }: Props) {
 
           <div className={styles.qrMiniActions}>
             <button className={styles.qrMiniBtn} onClick={handleDownload}>
-              ↓ İndir
+              <Icon icon={Download} size="xs" /> İndir
             </button>
             <button className={styles.qrMiniBtn} onClick={handlePrint}>
-              ⎙ Yazdır
+              <Icon icon={Printer} size="xs" /> Yazdır
             </button>
           </div>
         </div>
@@ -197,7 +202,7 @@ export function QrShareCard({ bookingUrl, bizName }: Props) {
                 className={`${styles.copyBtn} ${copied ? styles.copyBtnDone : ''}`}
                 onClick={handleCopy}
               >
-                {copied ? '✓ Kopyalandı' : 'Kopyala'}
+                {copied ? <><Icon icon={Check} size="xs" /> Kopyalandı</> : 'Kopyala'}
               </button>
             </div>
 
@@ -209,7 +214,7 @@ export function QrShareCard({ bookingUrl, bizName }: Props) {
                 rel="noopener noreferrer"
                 className={`${styles.shareBtn} ${styles.shareBtnWa}`}
               >
-                <span>💬</span> WhatsApp
+                <Icon icon={MessageCircle} size="xs" /> WhatsApp
               </a>
               <a
                 href={twUrl}
@@ -217,7 +222,7 @@ export function QrShareCard({ bookingUrl, bizName }: Props) {
                 rel="noopener noreferrer"
                 className={`${styles.shareBtn} ${styles.shareBtnTw}`}
               >
-                <span>🐦</span> Twitter / X
+                <Icon icon={Share2} size="xs" /> Twitter / X
               </a>
             </div>
           </div>
@@ -226,14 +231,14 @@ export function QrShareCard({ bookingUrl, bizName }: Props) {
 
       {/* ── Usage tips ── */}
       <div className={styles.tips}>
-        {[
-          { icon: '🖨️', text: 'A4 veya A5 çıktı alıp kasanıza koyun — müşteriler kamerasıyla okutabilir.' },
-          { icon: '📱', text: 'WhatsApp ile paylaşın — müşterilerinize linki gönderin.' },
-          { icon: '🏷️', text: 'Kartvizitinize QR kodu ekleyin — grafik tasarımcınıza PNG gönderin.' },
-          { icon: '📸', text: 'Instagram bio\'nuzda link olarak kullanın ya da story\'de paylaşın.' },
-        ].map(({ icon, text }) => (
+        {([
+          { icon: Printer,    text: 'A4 veya A5 çıktı alıp kasanıza koyun — müşteriler kamerasıyla okutabilir.' },
+          { icon: Smartphone, text: 'WhatsApp ile paylaşın — müşterilerinize linki gönderin.' },
+          { icon: Tag,        text: 'Kartvizitinize QR kodu ekleyin — grafik tasarımcınıza PNG gönderin.' },
+          { icon: Camera,     text: 'Instagram bio\'nuzda link olarak kullanın ya da story\'de paylaşın.' },
+        ] as { icon: LucideIcon; text: string }[]).map(({ icon, text }) => (
           <div key={text} className={styles.tip}>
-            <span className={styles.tipIcon}>{icon}</span>
+            <span className={styles.tipIcon}><Icon icon={icon} size="md" /></span>
             <span className={styles.tipText}>{text}</span>
           </div>
         ))}

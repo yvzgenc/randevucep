@@ -75,8 +75,10 @@ export interface EmailProvider {
   send(message: EmailMessage): Promise<NotificationResult>
 }
 
-// ── SMS / WhatsApp skeleton ───────────────────────────────────────────────────
-// Not yet implemented — placeholder for future providers.
+// ── SMS / WhatsApp ─────────────────────────────────────────────────────────────
+// Implemented by src/lib/notifications/providers/twilio.ts (SMS + WhatsApp).
+// Provider selection happens per-message via the `sms`/`whatsapp` config passed
+// to notifyUpcomingReminderMulti() — see src/lib/notifications/index.ts.
 
 export interface SmsMessage {
   to:   string

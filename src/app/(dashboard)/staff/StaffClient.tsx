@@ -29,7 +29,7 @@ export function StaffClient({ businessId, businessType, planName, staff, working
   const TABS: { id: TabId; label: string }[] = [
     { id: 'active',   label: 'Aktif Personel'   },
     { id: 'passive',  label: 'Pasif'             },
-    { id: 'schedule', label: '📅 Çalışma Günleri' },
+    { id: 'schedule', label: 'Çalışma Günleri' },
   ]
 
   const activeStaff  = useMemo(() => staff.filter((s) => s.status === 'Aktif'),  [staff])

@@ -2,12 +2,14 @@
 
 import Link             from 'next/link'
 import { usePathname, useRouter } from 'next/navigation'
+import { LayoutDashboard, Building2, LogOut } from 'lucide-react'
 import { createClient } from '@/lib/supabase/client'
+import { Icon } from '@/components/ui/Icon'
 import styles from './admin.module.css'
 
 const NAV = [
-  { href: '/admin',            icon: '◧',  label: 'Genel Bakış' },
-  { href: '/admin/businesses', icon: '🏢', label: 'İşletmeler'  },
+  { href: '/admin',            icon: LayoutDashboard, label: 'Genel Bakış' },
+  { href: '/admin/businesses', icon: Building2,       label: 'İşletmeler'  },
 ]
 
 export function AdminNav() {
@@ -34,7 +36,7 @@ export function AdminNav() {
               href={item.href}
               className={`${styles.navItem} ${isActive ? styles.navItemActive : ''}`}
             >
-              <span className={styles.navIcon}>{item.icon}</span>
+              <span className={styles.navIcon}><Icon icon={item.icon} size="sm" /></span>
               {item.label}
             </Link>
           )
@@ -43,7 +45,7 @@ export function AdminNav() {
 
       <div className={styles.sidebarBottom}>
         <button className={styles.logoutBtn} onClick={handleLogout}>
-          <span>↩</span>
+          <Icon icon={LogOut} size="sm" />
           Çıkış Yap
         </button>
       </div>

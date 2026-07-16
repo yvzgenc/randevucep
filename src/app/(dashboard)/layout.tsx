@@ -1,6 +1,7 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { requireOwnerBusiness } from '@/lib/supabase/business'
 import { Sidebar } from '@/components/dashboard/Sidebar'
 import styles from './dashboard-layout.module.css'
 
@@ -18,22 +19,7 @@ export default async function DashboardLayout({
     redirect('/login')
   }
 
-  const { data: business } = await supabase
-    .from('businesses')
-    .select('*')
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  // No business record at all
-  if (!business) {
-    redirect('/onboarding')
-  }
-
-  // Business exists but onboarding not completed
-  // onboarding_completed is boolean | null in schema
-  if (!business.onboarding_completed) {
-    redirect('/onboarding')
-  }
+  const business = await requireOwnerBusiness(supabase, user.id, { requireOnboarded: true })
 
   return (
     <div className={styles.shell}>

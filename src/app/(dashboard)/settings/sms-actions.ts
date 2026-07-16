@@ -1,6 +1,7 @@
 'use server'
 
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { verifyBusinessOwnership }    from '@/lib/supabase/business'
 
 interface SaveSmsSettingsInput {
   businessId:           number
@@ -18,14 +19,8 @@ export async function saveSmsSettings(
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
   // Verify ownership
-  const bizQuery = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('id', input.businessId)
-    .eq('owner_id', user.id)
-    .maybeSingle()
-
-  if (!bizQuery.data) return { error: 'İşletme bulunamadı.' }
+  const business = await verifyBusinessOwnership(supabase, user.id, input.businessId)
+  if (!business) return { error: 'İşletme bulunamadı.' }
 
   // Upsert settings
   const { error: upsertErr } = await supabase

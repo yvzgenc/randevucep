@@ -1,6 +1,8 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
+import { AlertTriangle, MessageCircle, Smartphone, Check, AlarmClock } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import { saveSmsSettings } from './sms-actions'
 import styles from './settings.module.css'
 import smsStyles from './sms.module.css'
@@ -62,7 +64,7 @@ export function SmsSettings({
     <div className={smsStyles.wrap}>
       {!twilioConfigured && (
         <div className={smsStyles.configWarning}>
-          <span className={smsStyles.configWarningIcon}>⚠️</span>
+          <span className={smsStyles.configWarningIcon}><Icon icon={AlertTriangle} size="md" /></span>
           <div>
             <p className={smsStyles.configWarningTitle}>Twilio yapılandırılmamış</p>
             <p className={smsStyles.configWarningDesc}>
@@ -78,7 +80,7 @@ export function SmsSettings({
         {/* SMS */}
         <label className={smsStyles.toggleRow}>
           <div className={smsStyles.toggleInfo}>
-            <p className={smsStyles.toggleTitle}>💬 SMS bildirimi</p>
+            <p className={smsStyles.toggleTitle}><Icon icon={MessageCircle} size="sm" /> SMS bildirimi</p>
             <p className={smsStyles.toggleDesc}>
               Müşteriye randevu onayı ve iptal bilgisi SMS ile gönderilir.
             </p>
@@ -98,7 +100,7 @@ export function SmsSettings({
         {/* WhatsApp */}
         <label className={smsStyles.toggleRow}>
           <div className={smsStyles.toggleInfo}>
-            <p className={smsStyles.toggleTitle}>📱 WhatsApp bildirimi</p>
+            <p className={smsStyles.toggleTitle}><Icon icon={Smartphone} size="sm" /> WhatsApp bildirimi</p>
             <p className={smsStyles.toggleDesc}>
               SMS yerine WhatsApp mesajı gönderir. Twilio WhatsApp sandbox veya onaylı numarası gerekir.
             </p>
@@ -118,7 +120,7 @@ export function SmsSettings({
         {/* Reminder */}
         <label className={smsStyles.toggleRow}>
           <div className={smsStyles.toggleInfo}>
-            <p className={smsStyles.toggleTitle}>⏰ SMS hatırlatma</p>
+            <p className={smsStyles.toggleTitle}><Icon icon={AlarmClock} size="sm" /> SMS hatırlatma</p>
             <p className={smsStyles.toggleDesc}>
               Randevudan belirtilen süre önce müşterilere SMS/WhatsApp hatırlatması gönderilir.
             </p>
@@ -158,7 +160,7 @@ export function SmsSettings({
       {/* Save */}
       <div className={smsStyles.saveRow}>
         {error  && <p className={smsStyles.errorMsg}>{error}</p>}
-        {saved  && <p className={smsStyles.successMsg}>✓ Kaydedildi</p>}
+        {saved  && <p className={smsStyles.successMsg}><Icon icon={Check} size="xs" /> Kaydedildi</p>}
         <button
           className={styles.upgradeBtn}
           style={{ width: 'auto', padding: '9px 20px' }}

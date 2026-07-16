@@ -12,7 +12,7 @@
   align-items: flex-start;
 }
 
-.configWarningIcon { font-size: 18px; flex-shrink: 0; line-height: 1.4; }
+.configWarningIcon { display: inline-flex; color: var(--color-warning); flex-shrink: 0; }
 
 .configWarningTitle {
   font-size: 13px;
@@ -58,6 +58,9 @@
 .toggleInfo { flex: 1; }
 
 .toggleTitle {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
   font-size: 14px;
   font-weight: 600;
   margin-bottom: 3px;
@@ -120,6 +123,9 @@
 }
 
 .successMsg {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
   font-size: 13px;
   color: var(--color-success);
   font-weight: 600;

@@ -2,7 +2,9 @@
 
 import React, { useState, useMemo } from 'react'
 import Link from 'next/link'
+import { Users, FileText } from 'lucide-react'
 import type { Customer } from '@/types/database'
+import { Icon }  from '@/components/ui/Icon'
 import styles    from './customers.module.css'
 import tabStyles from '../appointments/appt-tabs.module.css'
 
@@ -77,7 +79,9 @@ export function CustomersClient({ customers }: Props) {
       {/* ── Content ── */}
       {filtered.length === 0 ? (
         <div className={styles.empty}>
-          <div style={{ fontSize: 32, marginBottom: 12, opacity: 0.35 }}>👥</div>
+          <div style={{ display: 'flex', justifyContent: 'center', marginBottom: 12, opacity: 0.35 }}>
+            <Icon icon={Users} size={32} />
+          </div>
           <p className={styles.emptyTitle}>{currentTab.empty}</p>
           {tab === 'all' && (
             <p className={styles.emptyDesc}>
@@ -98,7 +102,7 @@ export function CustomersClient({ customers }: Props) {
             <Link key={c.id} href={`/customers/${c.id}`} className={styles.tableRowLink}>
               <span className={styles.primaryWithNote}>
                 <span className={styles.primary}>{c.full_name}</span>
-                {c.notes && <span className={styles.noteIndicator} title={c.notes}>📝</span>}
+                {c.notes && <span className={styles.noteIndicator} title={c.notes}><Icon icon={FileText} size="xs" /></span>}
               </span>
               <span className={styles.muted}>{c.phone}</span>
               <span className={styles.muted}>{c.email ?? '—'}</span>

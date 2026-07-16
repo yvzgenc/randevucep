@@ -2,6 +2,7 @@
 
 import { revalidatePath }             from 'next/cache'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { verifyBusinessOwnership }    from '@/lib/supabase/business'
 
 // ── Çalışma saatleri kaydet ───────────────────────────────────────────────────
 
@@ -20,13 +21,8 @@ export async function saveBusinessHours(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
-  const bizQ = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('id', businessId)
-    .eq('owner_id', user.id)
-    .maybeSingle()
-  if (!bizQ.data) return { error: 'Yetki hatası.' }
+  const business = await verifyBusinessOwnership(supabase, user.id, businessId)
+  if (!business) return { error: 'Yetki hatası.' }
 
   const upsertRows = rows.map((r) => ({
     business_id:  businessId,
@@ -56,13 +52,8 @@ export async function addClosure(
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
 
-  const bizQ = await supabase
-    .from('businesses')
-    .select('id')
-    .eq('id', businessId)
-    .eq('owner_id', user.id)
-    .maybeSingle()
-  if (!bizQ.data) return { error: 'Yetki hatası.' }
+  const business = await verifyBusinessOwnership(supabase, user.id, businessId)
+  if (!business) return { error: 'Yetki hatası.' }
 
   const { error } = await supabase
     .from('business_closures')
@@ -85,6 +76,9 @@ export async function deleteClosure(
   const supabase = await createServerSupabaseClient()
   const { data: { user } } = await supabase.auth.getUser()
   if (!user) return { error: 'Oturum açmanız gerekiyor.' }
+
+  const business = await verifyBusinessOwnership(supabase, user.id, businessId)
+  if (!business) return { error: 'Yetki hatası.' }
 
   const { error } = await supabase
     .from('business_closures')

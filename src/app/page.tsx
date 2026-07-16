@@ -1,8 +1,15 @@
 import Link   from 'next/link'
 import { redirect } from 'next/navigation'
+import {
+  Calendar, Link2, MessageCircle, Users, BarChart3, Smartphone, Lock, Check,
+  Scissors, Sparkles, Flower2, PawPrint, Stethoscope, Dumbbell, Eye, Pill,
+  type LucideIcon,
+} from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getOwnerBusiness } from '@/lib/supabase/business'
 import { isAdminEmail } from '@/lib/admin'
 import { PLANS } from '@/lib/plans'
+import { Icon } from '@/components/ui/Icon'
 import styles from './landing.module.css'
 
 export default async function RootPage() {
@@ -11,11 +18,7 @@ export default async function RootPage() {
 
   if (user) {
     if (isAdminEmail(user.email)) redirect('/admin')
-    const { data: biz } = await supabase
-      .from('businesses')
-      .select('id, onboarding_completed')
-      .eq('owner_id', user.id)
-      .maybeSingle()
+    const biz = await getOwnerBusiness(supabase, user.id)
     redirect(biz?.onboarding_completed ? '/dashboard' : '/onboarding')
   }
 
@@ -25,7 +28,7 @@ export default async function RootPage() {
       {/* ── Nav ── */}
       <nav className={styles.nav}>
         <Link href="/" className={styles.logo}>
-          <div className={styles.logoMark}>📅</div>
+          <div className={styles.logoMark}><Icon icon={Calendar} size="md" /></div>
           <span>RandevuCep</span>
         </Link>
         <div className={styles.navLinks}>
@@ -114,40 +117,40 @@ export default async function RootPage() {
         <h2 className={styles.sectionTitle}>İşletmeniz için ihtiyacınız olan her şey</h2>
         <p className={styles.sectionSub}>Randevu almaktan müşteri takibine kadar tüm süreçleri tek platformda yönetin.</p>
         <div className={styles.featureGrid}>
-          {[
+          {([
             {
-              icon: '🔗',
+              icon: Link2,
               title: 'Online Rezervasyon',
               desc: 'Müşterileriniz size özel rezervasyon sayfanızdan 7/24 randevu alabilir. Telefon trafiğini %80 azaltın.',
             },
             {
-              icon: '💬',
+              icon: MessageCircle,
               title: 'Otomatik Hatırlatmalar',
               desc: 'SMS ve WhatsApp ile otomatik randevu hatırlatmaları gönderin. Kaçan randevuları minimuma indirin.',
             },
             {
-              icon: '👥',
+              icon: Users,
               title: 'Personel Yönetimi',
               desc: 'Personelinizin çalışma saatlerini ve hizmetlerini ayrı ayrı belirleyin. Çakışmaları önleyin.',
             },
             {
-              icon: '📊',
+              icon: BarChart3,
               title: 'Analitik & Raporlar',
               desc: 'En çok tercih edilen hizmetler, personel performansı ve gelir trendlerini takip edin.',
             },
             {
-              icon: '📱',
+              icon: Smartphone,
               title: 'QR Kod Paylaşımı',
               desc: 'İşletmenizin rezervasyon sayfasını QR kod ile kolayca paylaşın. Vitrine veya kartvizite ekleyin.',
             },
             {
-              icon: '🔒',
+              icon: Lock,
               title: 'Güvenli & Hızlı',
               desc: 'Verileriniz Türkiye\'de güvenli sunucularda saklanır. KVKK uyumlu altyapı.',
             },
-          ].map(f => (
+          ] as { icon: LucideIcon; title: string; desc: string }[]).map(f => (
             <div key={f.title} className={styles.featureCard}>
-              <div className={styles.featureIcon}>{f.icon}</div>
+              <div className={styles.featureIcon}><Icon icon={f.icon} size={28} /></div>
               <h3 className={styles.featureTitle}>{f.title}</h3>
               <p className={styles.featureDesc}>{f.desc}</p>
             </div>
@@ -160,8 +163,19 @@ export default async function RootPage() {
         <div className={styles.sectionLabel}>Sektörler</div>
         <h2 className={styles.sectionTitle}>Her sektöre uygun</h2>
         <div className={styles.sectorGrid}>
-          {['💈 Kuaför & Berber','💅 Güzellik Salonu','🧘 Spa & Masaj','🐾 Veteriner','🦷 Diş Hekimi','🏋️ Fitness & Yoga','👁️ Optisyen','💊 Klinik'].map(s => (
-            <div key={s} className={styles.sectorChip}>{s}</div>
+          {([
+            { icon: Scissors,    label: 'Kuaför & Berber'   },
+            { icon: Sparkles,    label: 'Güzellik Salonu'   },
+            { icon: Flower2,     label: 'Spa & Masaj'       },
+            { icon: PawPrint,    label: 'Veteriner'         },
+            { icon: Stethoscope, label: 'Diş Hekimi'        },
+            { icon: Dumbbell,    label: 'Fitness & Yoga'    },
+            { icon: Eye,         label: 'Optisyen'          },
+            { icon: Pill,        label: 'Klinik'            },
+          ] as { icon: LucideIcon; label: string }[]).map(s => (
+            <div key={s.label} className={styles.sectorChip}>
+              <Icon icon={s.icon} size="sm" /> {s.label}
+            </div>
           ))}
         </div>
       </section>
@@ -195,10 +209,10 @@ export default async function RootPage() {
                 </div>
                 <p className={styles.planDesc}>{plan.description}</p>
                 <ul className={styles.planFeatures}>
-                  <li>✓ {staffLabel}</li>
-                  <li>✓ {svcLabel}</li>
-                  <li>✓ {apptLabel}</li>
-                  {extraFeatures.map(f => <li key={f}>✓ {f}</li>)}
+                  <li><Icon icon={Check} size="xs" /> {staffLabel}</li>
+                  <li><Icon icon={Check} size="xs" /> {svcLabel}</li>
+                  <li><Icon icon={Check} size="xs" /> {apptLabel}</li>
+                  {extraFeatures.map(f => <li key={f}><Icon icon={Check} size="xs" /> {f}</li>)}
                 </ul>
                 <Link
                   href="/register"
@@ -226,7 +240,7 @@ export default async function RootPage() {
         <div className={styles.footerTop}>
           <div className={styles.footerBrand}>
             <div className={styles.logo}>
-              <div className={styles.logoMark}>📅</div>
+              <div className={styles.logoMark}><Icon icon={Calendar} size="md" /></div>
               <span>RandevuCep</span>
             </div>
             <p className={styles.footerTagline}>Her sektör için çevrimiçi randevu yönetimi.</p>

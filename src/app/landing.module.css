@@ -33,7 +33,7 @@
 }
 
 .logoMark {
-  font-size: 18px;
+  display: inline-flex;
 }
 
 .navLinks {
@@ -360,7 +360,8 @@
 }
 
 .featureIcon {
-  font-size: 28px;
+  display: inline-flex;
+  color: var(--color-accent);
   margin-bottom: 16px;
 }
 
@@ -394,6 +395,9 @@
 }
 
 .sectorChip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
   padding: 10px 20px;
   font-size: 13px;
   font-weight: 500;
@@ -498,6 +502,17 @@
   margin-bottom: 28px;
   font-size: 13px;
   color: var(--color-text-2);
+}
+
+.planFeatures li {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.planFeatures li svg {
+  color: var(--color-success);
+  flex-shrink: 0;
 }
 
 .planBtn {

@@ -1,15 +1,17 @@
 'use client'
 
 import React, { useState } from 'react'
+import { Store, Clock, Smartphone, MessageCircle, CreditCard, Star } from 'lucide-react'
+import { Icon } from '@/components/ui/Icon'
 import styles from './settings-tabs.module.css'
 
 const TABS = [
-  { id: 'profil',  label: '🏪 İşletme Profili'   },
-  { id: 'hours',   label: '🕐 Çalışma Saatleri'  },
-  { id: 'qr',      label: '📱 QR & Link'          },
-  { id: 'sms',     label: '💬 SMS & WhatsApp'      },
-  { id: 'billing', label: '💳 Abonelik'            },
-  { id: 'plan',    label: '⭐ Planlar'              },
+  { id: 'profil',  label: 'İşletme Profili',  icon: Store         },
+  { id: 'hours',   label: 'Çalışma Saatleri', icon: Clock         },
+  { id: 'qr',      label: 'QR & Link',        icon: Smartphone    },
+  { id: 'sms',     label: 'SMS & WhatsApp',   icon: MessageCircle },
+  { id: 'billing', label: 'Abonelik',         icon: CreditCard    },
+  { id: 'plan',    label: 'Planlar',          icon: Star          },
 ] as const
 
 type TabId = typeof TABS[number]['id']
@@ -31,7 +33,7 @@ export function SettingsTabs({ children }: Props) {
             className={`${styles.tab} ${active === tab.id ? styles.tabActive : ''}`}
             onClick={() => setActive(tab.id)}
           >
-            {tab.label}
+            <Icon icon={tab.icon} size="sm" /> {tab.label}
           </button>
         ))}
       </div>

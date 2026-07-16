@@ -1,8 +1,10 @@
 import React from 'react'
 import { redirect } from 'next/navigation'
+import { Settings } from 'lucide-react'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
 import { isAdminEmail } from '@/lib/admin'
 import { AdminNav }    from './AdminNav'
+import { Icon }        from '@/components/ui/Icon'
 import styles from './admin.module.css'
 
 export const metadata = { title: 'Admin Panel' }
@@ -22,7 +24,7 @@ export default async function AdminLayout({
     <div className={styles.shell}>
       <aside className={styles.sidebar}>
         <div className={styles.sidebarLogo}>
-          <div className={styles.sidebarLogoMark}>⚙</div>
+          <div className={styles.sidebarLogoMark}><Icon icon={Settings} size="sm" /></div>
           <span className={styles.sidebarLogoText}>RandevuCep</span>
           <span className={styles.sidebarBadge}>Admin</span>
         </div>

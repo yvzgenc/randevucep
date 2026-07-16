@@ -1,6 +1,7 @@
 import type { Metadata } from 'next'
 import { redirect } from 'next/navigation'
 import { createServerSupabaseClient } from '@/lib/supabase/server'
+import { getOwnerBusiness } from '@/lib/supabase/business'
 import { OnboardingFlow } from './OnboardingFlow'
 
 export const metadata: Metadata = { title: 'İşletmenizi Kurun' }
@@ -13,11 +14,7 @@ export default async function OnboardingPage() {
     redirect('/login')
   }
 
-  const { data: business } = await supabase
-    .from('businesses')
-    .select('*')
-    .eq('owner_id', user.id)
-    .maybeSingle()
+  const business = await getOwnerBusiness(supabase, user.id)
 
   if (business?.onboarding_completed) {
     redirect('/dashboard')

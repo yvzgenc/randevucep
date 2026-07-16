@@ -1,8 +1,13 @@
 'use client'
 
 import React, { useState, useTransition } from 'react'
+import {
+  Check, Phone, Mail, Calendar, ClipboardList, CheckCircle2,
+  Wallet, XCircle, FileText, Star, CalendarDays,
+} from 'lucide-react'
 import type { Appointment, Customer }     from '@/types/database'
 import { saveCustomerNote }               from './actions'
+import { Icon }                           from '@/components/ui/Icon'
 import styles from './customer-detail.module.css'
 
 // ─── Types ────────────────────────────────────────────────────────────────────
@@ -94,7 +99,7 @@ function NotesPanel({
       />
       <div className={styles.notesSaveRow}>
         <span>
-          {saved  && <span className={styles.notesStatus}>✓ Kaydedildi</span>}
+          {saved  && <span className={styles.notesStatus}><Icon icon={Check} size="xs" /> Kaydedildi</span>}
           {error  && <span className={styles.notesError}>{error}</span>}
         </span>
         <button
@@ -139,13 +144,13 @@ export function CustomerDetail({ customer, appointments }: Props) {
           <div>
             <h1 className={styles.customerName}>{customer.full_name}</h1>
             <div className={styles.customerContacts}>
-              <span className={styles.contactItem}>📞 {customer.phone}</span>
+              <span className={styles.contactItem}><Icon icon={Phone} size="xs" /> {customer.phone}</span>
               {customer.email && (
-                <span className={styles.contactItem}>✉️ {customer.email}</span>
+                <span className={styles.contactItem}><Icon icon={Mail} size="xs" /> {customer.email}</span>
               )}
               {customer.created_at && (
                 <span className={styles.contactItem}>
-                  📅 {fmtDate(customer.created_at.split('T')[0])} tarihinden müşteri
+                  <Icon icon={Calendar} size="xs" /> {fmtDate(customer.created_at.split('T')[0])} tarihinden müşteri
                 </span>
               )}
             </div>
@@ -156,28 +161,28 @@ export function CustomerDetail({ customer, appointments }: Props) {
       {/* ── Stat chips ── */}
       <div className={styles.statsRow}>
         <div className={styles.statChip}>
-          <span className={styles.statChipIcon}>📋</span>
+          <span className={styles.statChipIcon}><Icon icon={ClipboardList} size="lg" /></span>
           <div>
             <p className={styles.statChipLabel}>Toplam Randevu</p>
             <p className={styles.statChipValue}>{appointments.length}</p>
           </div>
         </div>
         <div className={styles.statChip}>
-          <span className={styles.statChipIcon}>✅</span>
+          <span className={styles.statChipIcon}><Icon icon={CheckCircle2} size="lg" /></span>
           <div>
             <p className={styles.statChipLabel}>Tamamlanan</p>
             <p className={styles.statChipValue}>{completed.length}</p>
           </div>
         </div>
         <div className={styles.statChip}>
-          <span className={styles.statChipIcon}>💰</span>
+          <span className={styles.statChipIcon}><Icon icon={Wallet} size="lg" /></span>
           <div>
             <p className={styles.statChipLabel}>Toplam Ciro</p>
             <p className={styles.statChipValue}>₺{revenue.toFixed(0)}</p>
           </div>
         </div>
         <div className={styles.statChip}>
-          <span className={styles.statChipIcon}>❌</span>
+          <span className={styles.statChipIcon}><Icon icon={XCircle} size="lg" /></span>
           <div>
             <p className={styles.statChipLabel}>İptal / Gelmedi</p>
             <p className={styles.statChipValue}>{cancelled.length}</p>
@@ -191,7 +196,7 @@ export function CustomerDetail({ customer, appointments }: Props) {
         {/* ── Notes ── */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>📝 Notlar</span>
+            <span className={styles.cardTitle}><Icon icon={FileText} size="xs" /> Notlar</span>
           </div>
           <NotesPanel
             customerId={customer.id}
@@ -203,7 +208,7 @@ export function CustomerDetail({ customer, appointments }: Props) {
         {/* ── Preferred services ── */}
         <div className={styles.card}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>⭐ En Sık Hizmetler</span>
+            <span className={styles.cardTitle}><Icon icon={Star} size="xs" /> En Sık Hizmetler</span>
           </div>
           {topServices.length === 0 ? (
             <p className={styles.historyEmpty}>Henüz tamamlanan randevu yok.</p>
@@ -221,7 +226,7 @@ export function CustomerDetail({ customer, appointments }: Props) {
         {/* ── Appointment history ── */}
         <div className={`${styles.card} ${styles.cardFull}`}>
           <div className={styles.cardHeader}>
-            <span className={styles.cardTitle}>🗓 Randevu Geçmişi</span>
+            <span className={styles.cardTitle}><Icon icon={CalendarDays} size="xs" /> Randevu Geçmişi</span>
             <span className={styles.cardTitle}>{appointments.length} randevu</span>
           </div>
 

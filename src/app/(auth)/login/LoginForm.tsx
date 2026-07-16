@@ -71,6 +71,7 @@ export function LoginForm() {
         required
         autoComplete="current-password"
       />
+      <a href="/forgot-password" className={styles.forgotLink}>Şifremi unuttum</a>
       {error ? <p className={styles.errorMsg}>{error}</p> : null}
       <Button type="submit" fullWidth loading={loading}>
         Giriş Yap

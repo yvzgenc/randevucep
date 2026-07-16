@@ -22,7 +22,7 @@ const PROTECTED_BUSINESS = [
 const PROTECTED_ADMIN = ['/admin']
 
 // Routes only for unauthenticated users
-const AUTH_ONLY = ['/login', '/register']
+const AUTH_ONLY = ['/login', '/register', '/forgot-password']
 
 /** Read admin emails from env — same logic as lib/admin.ts */
 function getAdminEmails(): Set<string> {
